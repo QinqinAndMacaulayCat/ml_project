@@ -124,6 +124,14 @@ We may consider using dimensionality reduction techniques like PCA.
 
 We will use models introduced in class and pick the best-performing one based on out-of-sample evaluation metrics. Additionally, we will train a linear regression model as a benchmark.
 
+Model Description
+
+This project predicts corporate bond credit spreads using both linear and nonlinear regression models. We apply Ridge, Lasso, ElasticNet, Decision Tree, and XGBoost to compare model performance and explore the trade-off between interpretability and flexibility.
+
+Linear models with regularization (Ridge, Lasso, ElasticNet) reduce overfitting and highlight key predictors with stable coefficients. In contrast, tree-based methods (Decision Tree and XGBoost) allow nonlinear interactions and capture complex relationships between firm characteristics, market variables, and macroeconomic factors.
+
+The models are evaluated using out-of-sample metrics such as RMSE, MAE, and R². This comparison helps identify which model best explains the variation in credit spreads and which features drive those differences.
+
 | Model | Description |
 |--------|--------------|
 |Ridge Regression | Penalizes large coefficients with L2 norm |
