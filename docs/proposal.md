@@ -40,7 +40,7 @@ Total number of observations meeting the criteria is approximately 1760852, cove
 1. Key Columns
 
 - Bond Identifier: CUSIP
-- Firm Identifier: Stock Ticker
+- Firm Identifier: PERMNO
 - Date: End of Month
 
 We have checked the missingness and uniqueness of these key columns.
@@ -82,6 +82,19 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 | `term_spread`  | 3.42e+6   | 0.01   | 0.01   | -0.02  | 0.00   | 0.01   | 0.02   | 0.04   |
 
 3. Firm-level features
+We incorporate firm-level information at both the daily and quarterly frequency.
+
+• Daily Stock Price and Returns:
+Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
+
+• Daily Trading Liquidity Measures:
+Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
+
+• Quarterly Accounting Fundamentals:
+Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
+
+• Firm Identification:
+The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
 
 4. Macroeconomic features
 
