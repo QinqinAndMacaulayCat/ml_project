@@ -200,43 +200,46 @@ These features capture firm momentum and fundamental acceleration, which are kno
 
 After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
 
-1.Merging Procedure  
-    We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
-    (1.) Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
-    (2.) Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
-    (3.) Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
-    (4.) Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
+1. Merging Procedure  
+
+We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
+
+- Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
+- Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
+- Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
+- Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
 
 2. Missing-Value Handling
-    After merging, missing values are handled according to variable type:
 
-    Categorical Variables:
-    -  Credit rating dummies (AAA…D)
-    -  Rating transition indicators
-    -  Compustat data-status flag (costat)
-    Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+After merging, missing values are handled according to variable type:
 
-    Numeric Variables:
-    We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
+Categorical Variables:
+
+-  Credit rating dummies (AAA…D)
+-  Rating transition indicators
+-  Compustat data-status flag (costat)
+Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+
+Numeric Variables: We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
 
 
 3. Normalization
-   
-    (1.) Rank-Normalized Features
-   - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
-   - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
-   - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
+
+(1) Rank-Normalized Features
+
+- Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
+- Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
+- For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
 
 
-    (2.) Not Normalized (kept in raw form)
-   Includes macroeconomic indicators and yield-curve variables:
-   -  sp500_ret, gdp_gr, cpi_infl
-   -  ir3m_chg, ir10y_chg
-   -  vix_chg
-   -   s3m, term_spread
+(2) Not Normalized (kept in raw form) includes macroeconomic indicators and yield-curve variables:
+
+-  sp500_ret, gdp_gr, cpi_infl
+-  ir3m_chg, ir10y_chg
+-  vix_chg
+-   s3m, term_spread
      
-   These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
-
+These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
 
 
 ### 2.3 Data Splitting
@@ -350,8 +353,8 @@ In this project, we explored various machine learning models to predict corporat
 
 2. Computation Time For Each Model (Approximate)
 
-| Model                 | Tuning | Time for Training and Prediction |
-|-----------------------|-----------|------------------------------|
+| Model                 | Tuning      | Time for Training and Prediction |
+|-----------------------|-------------------|-------------------------|
 | Linear Regression     |           | 3.9 seconds              |
 | Elastic Net Regression |      | 1 minute 10 seconds         |
 | LGBM Regressor        |  31 minutes 41.4 seconds    | 58.3 seconds|
@@ -359,10 +362,9 @@ In this project, we explored various machine learning models to predict corporat
 | Logistic Regression       |           | 1 minute 30 seconds              |
 | Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
 | Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
-| Stacked Classifier        |           | 107 minutes 11.9 seconds         |
+| Stacked Classifier |           | 107 minutes 11.9 seconds         |
 
-### A.2 Classification Confusion Matrix
-
+### B.1 Classification Confusion Matrix
 
 The confusion matrixs are as follows:
 
