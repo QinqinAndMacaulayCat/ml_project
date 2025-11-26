@@ -198,12 +198,12 @@ These features capture firm momentum and fundamental acceleration, which are kno
 
 After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
 
-1.Merging Procedure
-    We combine the datasets in the following order to maintain consistent identifiers and time alignment:
-    (1.) Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.
-    (2.) Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.
-    (3.) Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.
-    (4.) Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.
+1.Merging Procedure  
+    We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
+    (1.) Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
+    (2.) Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
+    (3.) Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
+    (4.) Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
 
 2. Missing-Value Handling
     After merging, missing values are handled according to variable type:
