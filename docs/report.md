@@ -177,6 +177,23 @@ These features capture firm momentum and fundamental acceleration, which are kno
 
 
 4. Macroeconomic features (yuxi)
+- Equity Market Return (sp500):  
+  Monthly level of a broad U.S. equity index (S&P 500), used to capture overall stock market conditions and risk appetite.
+
+- Short-Term Interest Rate (ir3m):  
+  Monthly average of the 3-month Treasury yield, serving as the short end of the risk-free term structure and a proxy for monetary policy stance.
+
+- Long-Term Interest Rate (ir10y):  
+  Monthly average of the 10-year Treasury yield, capturing long-term discount rates relevant for bond valuation.
+
+- Implied Volatility (vix):  
+  Monthly average of the VIX index, measuring market-implied equity volatility and shifts in aggregate risk aversion.
+
+- Real Economic Activity (gdp):  
+  Real GDP level (or growth, depending on transformation) aligned to the month of observation, summarizing aggregate economic conditions.
+
+- Inflation (cpi):  
+  Consumer Price Index level (or inflation rate) matched to each month, capturing the inflation environment relevant for nominal yields and real required returns.
 
 | Variable | Count |   Mean   |   Std   |    Min   |    25%    |    50%    |    75%    |    Max    |
 |:---------|------:|---------:|--------:|---------:|----------:|----------:|----------:|----------:|
@@ -187,14 +204,15 @@ These features capture firm momentum and fundamental acceleration, which are kno
 | GDP      |   328 | 17764.90 | 2911.28 | 12703.74 | 15670.88  | 17035.11  | 20070.68  | 23770.98  |
 | CPI      |   333 |  227.69  |   42.89 |  162.00  |  191.70   |  227.17   |  252.56   |  324.37   |
 
-
 5. Industry features (yuxi)
+
+- Sector ETF Price and Return (price, return):  
+  For each bond, we link a sector ETF based on its GICS sector, and use the ETF’s monthly price (`price`) and monthly return (`return`) to proxy for sector-level performance and sector-specific shocks that may not be fully captured by firm-level variables.
 
 | Variable | Count |  Mean   |   Std   |    Min    |    25%    |    50%    |    75%    |    Max    |
 |:---------|------:|--------:|--------:|----------:|----------:|----------:|----------:|----------:|
 | Price    |  3128 |  44.03  |  39.40  |   4.57    |  18.23    |  29.43    |  54.97    | 300.68    |
 | Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
-
 
 ### 2.2 Feature Construction (Yutung)
 
