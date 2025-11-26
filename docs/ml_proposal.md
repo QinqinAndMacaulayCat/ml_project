@@ -9,7 +9,7 @@ The objective of this project is to predict corporate bond yield to maturity (YT
 
 By applying various machine learning regression models such as Lasso, Ridge, ElasticNet, Decision Tree, and Boosting. We aim to identify the most important predictors of bond yield changes and the best-performing model for this task.
 
----
+(If the model performs too bad, we may change the target variable to volatility of stock returns)
 
 ## 2. Methodology
 
@@ -84,34 +84,34 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 3. Firm-level features
 We incorporate firm-level information at both the daily and quarterly frequency.
 
-• Daily Stock Price and Returns:
+- Daily Stock Price and Returns:
 Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
 
-• Daily Trading Liquidity Measures:
+- Daily Trading Liquidity Measures:
 Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
 
-• Quarterly Accounting Fundamentals:
+- Quarterly Accounting Fundamentals:
 Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
 
-• Firm Identification:
+- Firm Identification:
 The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
 
 4. Macroeconomic features
-• Gross Domestic Product (GDP):
+
+- Gross Domestic Product (GDP):
 Represents the total monetary value of all final goods and services produced within a country’s borders over a specific period. GDP serves as a comprehensive measure of overall economic activity and growth, reflecting the health and size of the economy.
 
-Consumer Price Index (CPI):
-• Measures the average change over time in the prices paid by consumers for a representative basket of goods and services. CPI is a key indicator of inflation and purchasing power, capturing trends in the cost of living.
+- Consumer Price Index (CPI): 
+Measures the average change over time in the prices paid by consumers for a representative basket of goods and services. CPI is a key indicator of inflation and purchasing power, capturing trends in the cost of living.
 
-1-Year Treasury Yield (GS1):
-• Denotes the yield (interest rate) on U.S. government securities with a one-year maturity. GS1 reflects short-term interest rate conditions and expectations for near-term monetary policy.
+- 1-Year Treasury Yield (GS1):
+Denotes the yield (interest rate) on U.S. government securities with a one-year maturity. GS1 reflects short-term interest rate conditions and expectations for near-term monetary policy.
 
-10-Year Treasury Yield (GS10):
-• Denotes the yield on U.S. government securities with a ten-year maturity. GS10 serves as a benchmark for long-term interest rates, influencing borrowing costs, investment valuations, and economic growth expectations.
+- 10-Year Treasury Yield (GS10):
+Denotes the yield on U.S. government securities with a ten-year maturity. GS10 serves as a benchmark for long-term interest rates, influencing borrowing costs, investment valuations, and economic growth expectations.
 
-Industry-Level Market Indicators:
-• Include daily open, high, low, and closing prices (Open_XLY, High_XLY, Low_XLY, Close_XLY) as well as trading volume (Volume_XLY) for sector exchange-traded funds (ETFs). These variables capture the price dynamics and trading activity of representative industry portfolios, reflecting sector-specific performance and market sentiment.
-
+- Industry-Level Market Indicators:
+Include daily open, high, low, and closing prices (Open_XLY, High_XLY, Low_XLY, Close_XLY) as well as trading volume (Volume_XLY) for sector exchange-traded funds (ETFs). These variables capture the price dynamics and trading activity of representative industry portfolios, reflecting sector-specific performance and market sentiment.
 
 
 ### 2.2 Feature Construction
@@ -126,11 +126,11 @@ We will use models introduced in class and pick the best-performing one based on
 
 Model Description
 
-This project predicts corporate bond credit spreads using both linear and nonlinear regression models. We apply Ridge, Lasso, ElasticNet, Decision Tree, and XGBoost to compare model performance and explore the trade-off between interpretability and flexibility.
+This project predicts corporate bond credit spreads using both linear and nonlinear regression models. We apply Ridge, Lasso, ElasticNet, Decision Tree, and Boosting to compare model performance and explore the trade-off between interpretability and flexibility.
 
-Linear models with regularization (Ridge, Lasso, ElasticNet) reduce overfitting and highlight key predictors with stable coefficients. In contrast, tree-based methods (Decision Tree and XGBoost) allow nonlinear interactions and capture complex relationships between firm characteristics, market variables, and macroeconomic factors.
+Linear models with regularization (Ridge, Lasso, ElasticNet) reduce overfitting and highlight key predictors with stable coefficients. In contrast, tree-based methods (Decision Tree and Boosting) allow nonlinear interactions and capture complex relationships between firm characteristics, market variables, and macroeconomic factors.
 
-The models are evaluated using out-of-sample metrics such as RMSE, MAE, and R². This comparison helps identify which model best explains the variation in credit spreads and which features drive those differences.
+The models are evaluated using out-of-sample metrics such as RMSE, MAE, and $R^2$. This comparison helps identify which model best explains the variation in credit spreads and which features drive those differences.
 
 | Model | Description |
 |--------|--------------|
@@ -165,4 +165,12 @@ We will use a time-series split to create training, validation, and test sets. W
 4. Model Training: Split data into training, validation, and test sets. Train models with hyperparameter tuning via validation set. 
 5. Model Evaluation: Compare models using MSE, MAE, and $R^2$ on the test set.
 
+## Appendix
 
+### A.1 Use of AI
+
+We will use AI tools such as ChatGPT to:
+
+- Write report and PPT after we have completed the analysis.
+- Help debug code if we encounter issues that we cannot resolve ourselves.
+- Help understand the column meanings in the WRDS documentation as some of them are not very straightforward or do not have any description at all.
