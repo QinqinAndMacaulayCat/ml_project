@@ -9,7 +9,7 @@ The objective of this project is to predict corporate bond yield to maturity (YT
 
 By applying various machine learning regression models such as ElasticNet, Boosting and Multi-layer Perceptron, we aim to improve prediction accuracy compared to traditional linear regression models.
 
-In addition, we used the change direction of YTM as a classification target since there are many outliers in the YTM change values that may affect regression performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
+In addition, we used the change direction of YTM movements as a classification target since there are many outliers in the YTM change values that may affect regression performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
 
 
 ## 2. Methodology
@@ -45,6 +45,34 @@ The Data is from the "WRDS Bond Returns" database, which provides monthly bond y
 We only consider senior bonds and exclude defaulted bonds. Additionally, the yields exceeding [-1, 1] are treated as outliers and removed from the dataset.
 
 Total number of observations meeting the criteria is approximately 1760852, covering 74191 unique bonds and 3187 unique firms over the sample period.
+
+After merging with firm-level and macroeconomic data, the final dataset contains 12117 unique bonds.
+
+The data descriptive statistics of the yield to maturity (YTM) changes are as follows:
+
+```plaintext
+count    854769.000000
+mean         -0.000005
+std           0.014440
+min          -0.980800
+25%          -0.001840
+50%          -0.000030
+75%           0.001710
+max           0.979029
+Name: ytm_chg, dtype: float64
+
+```
+
+The number of observations for each YTM change direction category is as follows: 
+
+```plaintext
+up_down
+down       435398
+up         399205
+neutral     20166
+Name: count, dtype: int64
+```
+
 
 
 #### 2.1.2 Features
@@ -89,7 +117,7 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 | `upgrade`      | 3.42e+6   | 0.00   | 0.04   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 | `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 
-3. Firm-level features
+3. Firm-level features (yutung)
 
 We incorporate firm-level information at both the daily and quarterly frequency.
 
@@ -123,9 +151,9 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
     After merging, missing values are handled according to variable type:
 
     Categorical Variables such as:
-	•	Credit rating dummies (AAA…D)
-	•	Rating transition indicators
-	•	Compustat data-status flag (costat)
+	- Credit rating dummies (AAA…D)
+	- Rating transition indicators
+	- Compustat data-status flag (costat)
     Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
 
     Numeric Variables:
@@ -244,3 +272,27 @@ In classification tasks, both the Elastic Net Classifier and Logistic Regression
 ### 4. Conclusion
 
 In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
+
+
+## Appendix: 
+
+### A.1 Implementation Details
+
+1. Software and Libraries
+- CPU: MacBook Pro (Apple M4 Pro)
+- Programming Language: Python 3.13
+- Libraries: pandas, numpy, scikit-learn, lightgbm, tensorflow/keras
+- Code Repository: Github [https://github.com/QinqinAndMacaulayCat/ml_project/tree/main]
+
+2. Computation Time For Each Model (Approximate)
+
+| Model                 | Tuning | Time for Training and Prediction |
+|-----------------------|-----------|------------------------------|
+| Linear Regression     |           | 3.9 seconds              |
+| Elastic Net Regression |      | 1 minute 10 seconds         |
+| LGBM Regressor        |  31 minutes 41.4 seconds    | 58.3 seconds|
+| Stacked Regressor     |           | 6 minutes 50 seconds         |
+| Logistic Regression       |           | 1 minute 30 seconds              |
+| Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
+| Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
+| Stacked Classifier        |           | 107 minutes 11.9 seconds         |
