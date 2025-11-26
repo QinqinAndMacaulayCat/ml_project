@@ -18,6 +18,8 @@ In addition, we used the change direction of YTM movements as a classification t
 
 We will utilize data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequence is monthly and data range is from July 2002 to February 2025.
 
+We totally have 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the target variable and features are described below.
+
 
 #### 2.1.1 Target Variable
 
@@ -329,7 +331,7 @@ As we mentioned before, we defined the target variable for classification as the
 In classification tasks, both the Elastic Net Classifier and Logistic Regression models exhibited similar performance, which is consistent with the regression results. The LGBM Classifier outperformed the other models, achieving the highest accuracy, precision, and recall. The Stacked Classifier also showed strong performance, although it did not exceed the LGBM Classifier.
 
 
-### 4. Conclusion
+## 4. Conclusion
 
 In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
 
