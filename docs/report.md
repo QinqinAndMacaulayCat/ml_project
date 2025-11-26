@@ -118,19 +118,59 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 
 3. Firm-level features (yutung)
 
-We incorporate firm-level information at both the daily and quarterly frequency.
 
-- Daily Stock Price and Returns:
-Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
+We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
 
-- Daily Trading Liquidity Measures:
-Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
+(1.) Stock Market Features (Monthly Aggregated)
+    - ret — Monthly stock return (accumulated from daily returns).
+    - vol — Monthly return volatility (std of daily log returns).
+    - dvol — Dollar trading volume (price × shares traded).
+    - turnover — Trading turnover (shares traded ÷ shares outstanding).
+    - bidask — Bid–ask spread based on daily midquotes.
+    - numtrades — Number of trades in the month.
+    - mktcap — Month-end market capitalization.
+    - price_mean — Average daily stock price.
 
-- Quarterly Accounting Fundamentals:
-Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
+    These features reflect firm-level market performance, trading activity, and liquidity conditions.
 
-- Firm Identification:
-The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
+(2.) Accounting-Based Derived Indicators (Monthly Filled)
+    - log_atq — Log total assets (firm size proxy).
+    - lev_total — Leverage ratio = total liabilities ÷ total assets.
+    - equity_ratio — Equity-to-assets ratio.
+    - roa — Profitability = net income ÷ total assets.
+    - profit_margin — Net profit margin = net income ÷ revenue.
+    - int_coverage — Ability to service debt = operating income ÷ interest expense.
+    - mkt_cap — Accounting-based market cap = prccq × cshoq.
+    - market_to_book — Valuation ratio = (market cap ÷ common equity).
+    These variables summarize capital structure, profitability, solvency, and valuation.
+
+
+(3.) Growth Indicators (QoQ)
+    - atq_growth — Asset growth (decomposition of balance-sheet expansion).
+    - revtq_growth — Revenue growth (sales momentum).
+    - niq_growth — Net income growth (profitability momentum).
+    These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
+
+| Variable           | Count   | Mean    | Std     | Min       | 25%       | 50%       | 75%       | Max        |
+|-------------------|---------|---------|---------|-----------|-----------|-----------|-----------|------------|
+| stock_ret         | 866,997 | 0.01    | 0.09    | -0.85     | -0.03     | 0.01      | 0.05      | 4.75       |
+| stock_vol         | 866,997 | 0.02    | 0.01    | 0.00      | 0.01      | 0.01      | 0.02      | 0.92       |
+| dvol              | 866,997 | 8.24e9  | 2.18e10 | 0.00      | 1.34e9    | 3.52e9    | 7.90e9    | 7.99e11    |
+| stock_price_mean  | 866,997 | 432.61  | 10023.2 | -484.85   | 32.42     | 53.72     | 90.37     | 616,729.9  |
+| turnover          | 866,997 | 9.18    | 24.62   | 0.00      | 4.62      | 6.28      | 9.37      | 1,570.73   |
+| bidask            | 866,997 | 0.02    | 0.02    | 0.00      | 0.02      | 0.02      | 0.03      | 0.36       |
+| numtrades         | 866,997 | 193,014 | 1.05e6  | 0.00      | 0.00      | 0.00      | 0.00      | 29,055,600 |
+| stock_mktcap      | 866,997 | 6.78e7  | 1.85e8  | 1033.45   | 8.31e6    | 2.28e7    | 5.79e7    | 3.07e9     |
+| log_atq           | 866,997 | 10.41   | 1.56    | 3.91      | 9.46      | 10.30     | 11.21     | 15.19      |
+| lev_total         | 866,997 | 0.70    | 0.18    | 0.15      | 0.59      | 0.68      | 0.80      | 4.30       |
+| equity_ratio      | 866,997 | 0.29    | 0.18    | -3.30     | 0.19      | 0.31      | 0.40      | 0.85       |
+| roa               | 866,997 | 0.01    | 0.02    | -4.85     | 0.00      | 0.01      | 0.02      | 1.40       |
+| profit_margin     | 866,997 | -4.52e6 | 6.19e8  | -2.82e11  | 0.05      | 0.09      | 0.14      | 3.05e9     |
+| int_coverage      | 866,997 | 12.93   | 99.17   | -859.33   | 5.65      | 9.00      | 12.99     | 14,841.0   |
+| accounting_mktcap | 866,997 | 70,786  | 186,209 | 3.47      | 9,617     | 25,005    | 61,211    | 3,035,217  |
+| market_to_book    | 866,997 | 1.87e7  | 5.80e9  | -10,390   | 1.45      | 2.32      | 3.86      | 1.80e12    |
+| atq_growth        | 866,997 | 0.02    | 0.10    | -0.88     | -0.01     | 0.01      | 0.02      | 10.27      |
+
 
 4. Macroeconomic features (yuxi)
 
