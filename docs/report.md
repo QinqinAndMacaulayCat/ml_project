@@ -120,35 +120,38 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 
 We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
 
-(1.) Stock Market Features (Monthly Aggregated)
-    - ret — Monthly stock return (accumulated from daily returns).
-    - vol — Monthly return volatility (std of daily log returns).
-    - dvol — Dollar trading volume (price × shares traded).
-    - turnover — Trading turnover (shares traded ÷ shares outstanding).
-    - bidask — Bid–ask spread based on daily midquotes.
-    - numtrades — Number of trades in the month.
-    - mktcap — Month-end market capitalization.
-    - price_mean — Average daily stock price.
+(1) Stock Market Features (Monthly Aggregated)
 
-    These features reflect firm-level market performance, trading activity, and liquidity conditions.
+- ret — Monthly stock return (accumulated from daily returns).
+- vol — Monthly return volatility (std of daily log returns).
+- dvol — Dollar trading volume (price × shares traded).
+- turnover — Trading turnover (shares traded ÷ shares outstanding).
+- bidask — Bid–ask spread based on daily midquotes.
+- numtrades — Number of trades in the month.
+- mktcap — Month-end market capitalization.
+- price_mean — Average daily stock price.
 
-(2.) Accounting-Based Derived Indicators (Monthly Filled)
-    - log_atq — Log total assets (firm size proxy).
-    - lev_total — Leverage ratio = total liabilities ÷ total assets.
-    - equity_ratio — Equity-to-assets ratio.
-    - roa — Profitability = net income ÷ total assets.
-    - profit_margin — Net profit margin = net income ÷ revenue.
-    - int_coverage — Ability to service debt = operating income ÷ interest expense.
-    - mkt_cap — Accounting-based market cap = prccq × cshoq.
-    - market_to_book — Valuation ratio = (market cap ÷ common equity).
-    These variables summarize capital structure, profitability, solvency, and valuation.
+These features reflect firm-level market performance, trading activity, and liquidity conditions.
+
+(2) Accounting-Based Derived Indicators (Monthly Filled)
+
+- log_atq — Log total assets (firm size proxy).
+- lev_total — Leverage ratio = total liabilities ÷ total assets.
+- equity_ratio — Equity-to-assets ratio.
+- roa — Profitability = net income ÷ total assets.
+- profit_margin — Net profit margin = net income ÷ revenue.
+- int_coverage — Ability to service debt = operating income ÷ interest expense.
+- mkt_cap — Accounting-based market cap = prccq × cshoq.
+- market_to_book — Valuation ratio = (market cap ÷ common equity).
+These variables summarize capital structure, profitability, solvency, and valuation.
 
 
-(3.) Growth Indicators (QoQ)
-    - atq_growth — Asset growth (decomposition of balance-sheet expansion).
-    - revtq_growth — Revenue growth (sales momentum).
-    - niq_growth — Net income growth (profitability momentum).
-    These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
+(3) Growth Indicators (QoQ)
+
+- atq_growth — Asset growth (decomposition of balance-sheet expansion).
+- revtq_growth — Revenue growth (sales momentum).
+- niq_growth — Net income growth (profitability momentum).
+These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
 
 | Variable           | Count   | Mean    | Std     | Min       | 25%       | 50%       | 75%       | Max        |
 |-------------------|---------|---------|---------|-----------|-----------|-----------|-----------|------------|
