@@ -66,7 +66,6 @@ Name: ytm_chg, dtype: float64
 The number of observations for each YTM change direction category is as follows: 
 
 ```plaintext
-up_down
 down       435398
 up         399205
 neutral     20166
@@ -94,7 +93,7 @@ We have checked the missingness and uniqueness of these key columns.
 - Credit Ratings: One-hot encoded variables for ratings from AAA to D (rating_A, rating_AA, ..., rating_D). The ratings are weighted averages ratings from WRDS Bond Returns database rather than S&P, Moody's, or Fitch alone.
 - Rating Change Indicators: Binary variables indicating whether there was an upgrade or downgrade in the bond's credit rating in the past month (upgrade, downgrade).
 
-Here, we used lagged values of features except time to maturity and coupon rate to avoid look-ahead bias.
+Here, we used lagged values of features except time to maturity and coupon rate to avoid data leakage.
 
 
 | Variable       | Count     | Mean   | Std    | Min    | 25%    | 50%    | 75%    | Max    |
@@ -119,19 +118,59 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 
 3. Firm-level features (yutung)
 
-We incorporate firm-level information at both the daily and quarterly frequency.
 
-- Daily Stock Price and Returns:
-Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
+We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
 
-- Daily Trading Liquidity Measures:
-Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
+(1.) Stock Market Features (Monthly Aggregated)
+    - ret — Monthly stock return (accumulated from daily returns).
+    - vol — Monthly return volatility (std of daily log returns).
+    - dvol — Dollar trading volume (price × shares traded).
+    - turnover — Trading turnover (shares traded ÷ shares outstanding).
+    - bidask — Bid–ask spread based on daily midquotes.
+    - numtrades — Number of trades in the month.
+    - mktcap — Month-end market capitalization.
+    - price_mean — Average daily stock price.
 
-- Quarterly Accounting Fundamentals:
-Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
+    These features reflect firm-level market performance, trading activity, and liquidity conditions.
 
-- Firm Identification:
-The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
+(2.) Accounting-Based Derived Indicators (Monthly Filled)
+    - log_atq — Log total assets (firm size proxy).
+    - lev_total — Leverage ratio = total liabilities ÷ total assets.
+    - equity_ratio — Equity-to-assets ratio.
+    - roa — Profitability = net income ÷ total assets.
+    - profit_margin — Net profit margin = net income ÷ revenue.
+    - int_coverage — Ability to service debt = operating income ÷ interest expense.
+    - mkt_cap — Accounting-based market cap = prccq × cshoq.
+    - market_to_book — Valuation ratio = (market cap ÷ common equity).
+    These variables summarize capital structure, profitability, solvency, and valuation.
+
+
+(3.) Growth Indicators (QoQ)
+    - atq_growth — Asset growth (decomposition of balance-sheet expansion).
+    - revtq_growth — Revenue growth (sales momentum).
+    - niq_growth — Net income growth (profitability momentum).
+    These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
+
+| Variable           | Count   | Mean    | Std     | Min       | 25%       | 50%       | 75%       | Max        |
+|-------------------|---------|---------|---------|-----------|-----------|-----------|-----------|------------|
+| stock_ret         | 866,997 | 0.01    | 0.09    | -0.85     | -0.03     | 0.01      | 0.05      | 4.75       |
+| stock_vol         | 866,997 | 0.02    | 0.01    | 0.00      | 0.01      | 0.01      | 0.02      | 0.92       |
+| dvol              | 866,997 | 8.24e9  | 2.18e10 | 0.00      | 1.34e9    | 3.52e9    | 7.90e9    | 7.99e11    |
+| stock_price_mean  | 866,997 | 432.61  | 10023.2 | -484.85   | 32.42     | 53.72     | 90.37     | 616,729.9  |
+| turnover          | 866,997 | 9.18    | 24.62   | 0.00      | 4.62      | 6.28      | 9.37      | 1,570.73   |
+| bidask            | 866,997 | 0.02    | 0.02    | 0.00      | 0.02      | 0.02      | 0.03      | 0.36       |
+| numtrades         | 866,997 | 193,014 | 1.05e6  | 0.00      | 0.00      | 0.00      | 0.00      | 29,055,600 |
+| stock_mktcap      | 866,997 | 6.78e7  | 1.85e8  | 1033.45   | 8.31e6    | 2.28e7    | 5.79e7    | 3.07e9     |
+| log_atq           | 866,997 | 10.41   | 1.56    | 3.91      | 9.46      | 10.30     | 11.21     | 15.19      |
+| lev_total         | 866,997 | 0.70    | 0.18    | 0.15      | 0.59      | 0.68      | 0.80      | 4.30       |
+| equity_ratio      | 866,997 | 0.29    | 0.18    | -3.30     | 0.19      | 0.31      | 0.40      | 0.85       |
+| roa               | 866,997 | 0.01    | 0.02    | -4.85     | 0.00      | 0.01      | 0.02      | 1.40       |
+| profit_margin     | 866,997 | -4.52e6 | 6.19e8  | -2.82e11  | 0.05      | 0.09      | 0.14      | 3.05e9     |
+| int_coverage      | 866,997 | 12.93   | 99.17   | -859.33   | 5.65      | 9.00      | 12.99     | 14,841.0   |
+| accounting_mktcap | 866,997 | 70,786  | 186,209 | 3.47      | 9,617     | 25,005    | 61,211    | 3,035,217  |
+| market_to_book    | 866,997 | 1.87e7  | 5.80e9  | -10,390   | 1.45      | 2.32      | 3.86      | 1.80e12    |
+| atq_growth        | 866,997 | 0.02    | 0.10    | -0.88     | -0.01     | 0.01      | 0.02      | 10.27      |
+
 
 4. Macroeconomic features (yuxi)
 
@@ -201,7 +240,7 @@ For example, to predict YTM changes in 2012, we used data from 2002 to 2011 as t
 
 ### 2.4 Modeling Framework
 
-#### 2.4.1 Regression Models
+**2.4.1 Regression Models**
 
 We implemented and compared the following machine learning models for regression task:
 
@@ -218,8 +257,9 @@ We also implemented a Stacked Regressor that combines predictions from Linear Re
 
 For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
 
+The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
-#### 2.4.2 Classification Models
+**2.4.2 Classification Models**
 
 For classification task, we implemented and compared the following models:
 
@@ -312,3 +352,46 @@ In this project, we explored various machine learning models to predict corporat
 | Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
 | Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
 | Stacked Classifier        |           | 107 minutes 11.9 seconds         |
+
+### A.2 Classification Confusion Matrix
+
+
+The confusion matrixs are as follows:
+
+1. Logistic Regression
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 155404  | 103686  | 264     |
+| **down**            | 54596   | 205732  | 322     |
+| **neutral**         | 3986    | 6213    | 1259    |
+
+
+2. Elastic Net Classification
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 155442  | 103662  | 250     |
+| **down**            | 54610   | 205719  | 321     |
+| **neutral**         | 3990    | 6218    | 1250    |
+
+
+3. LGBM Classifier
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 174264  | 84514   | 576     |
+| **down**            | 58838   | 201267  | 545     |
+| **neutral**         | 2317    | 3105    | 6036    |
+
+
+4. Stacked Classifier
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 176566  | 82735   | 53      |
+| **down**            | 62485   | 198119  | 46      |
+| **neutral**         | 3147    | 4741    | 3570    |
+
+
+
