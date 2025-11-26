@@ -73,7 +73,6 @@ Name: count, dtype: int64
 ```
 
 
-
 #### 2.1.2 Features
 
 1. Key Columns
@@ -86,8 +85,8 @@ We have checked the missingness and uniqueness of these key columns.
 
 2. Bond-level features
 
-- Time to Maturity (tmt)
-- Coupon Rate (coupon)
+- Time to Maturity (tmt): the remaining time to maturity of the bond in years.
+- Coupon Rate (coupon): the annual coupon rate of the bond.
 - t_spread: the weighted average bid-ask spread of the bond which measures liquidity.
 - return_eom: bond return of last month. 
 - Credit Ratings: One-hot encoded variables for ratings from AAA to D (rating_A, rating_AA, ..., rating_D). The ratings are weighted averages ratings from WRDS Bond Returns database rather than S&P, Moody's, or Fitch alone.
@@ -241,6 +240,8 @@ We also implemented a Stacked Regressor that combines predictions from Linear Re
 For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
 
 The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
+
+Notice that in each load, we normalized the macroeconomic variables based on the training set statistics. That's because these variables are identical across all firms in a given month, normalizing them using the entire dataset would lead to data leakage and normalizing them monthly would collapse them into constants, eliminating their informational content.
 
 **2.4.2 Classification Models**
 
