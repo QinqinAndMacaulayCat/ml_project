@@ -109,8 +109,104 @@ The PERMNO identifier is present in both daily stock data and quarterly fundamen
 
 
 ### 2.2 Feature Construction (Yutung)
+To enhance bond yield prediction, we construct a comprehensive set of features from firm-level, market-level, and macroeconomic information. All features are aligned to month-end and lagged by one month to prevent look-ahead bias, reflecting the information available to investors at the time of prediction.
 
-We will standardize continuous features to have zero mean and unit variance. 
+1. Firm-Level Stock Market Features (Monthly Aggregated)
+    Derived from CRSP daily data and aggregated to monthly frequency:
+
+    (a) Price & Return
+        •	stock_ret — Monthly stock return (product of daily returns − 1).
+        •	stock_vol — Monthly volatility (standard deviation of daily log returns).
+        •	dvol — Total monthly dollar trading volume.
+        •	stock_price_mean — Average daily price within the month.
+
+    (b) Liquidity Measures
+        •	turnover — Monthly average turnover.
+        •	bidask — Monthly average bid–ask spread.
+        •	numtrades — Number of trades summed over the month.
+        •	stock_mktcap — Market capitalization at month end (PRC × SHR_OUT).
+
+2. Quarterly Accounting Fundamentals (Forward-Filled Monthly)
+    Original Compustat variables resampled to month-end:
+
+    (a) Raw Accounting Fundamentals
+        •	atq — Total assets
+        •	ltq — Total liabilities
+        •	ceqq — Common equity
+        •	cshoq — Shares outstanding
+        •	niq — Net income
+        •	oibdpq — Operating income before depreciation
+        •	revtq — Revenue
+        •	xintq — Interest expense
+        •	prccq — Closing price (quarterly)
+
+    (b) Derived Financial Ratios
+        •	log_atq — Log total assets
+        •	lev_total — Leverage ratio (ltq / atq)
+        •	equity_ratio — Equity-to-assets ratio (ceqq / atq)
+        •	roa — Return on assets (niq / atq)
+        •	profit_margin — Net margin (niq / revtq)
+        •	int_coverage — Interest coverage (oibdpq / xintq)
+        •	accounting_mktcap — Accounting-based market cap (prccq × cshoq)
+
+    (c) Growth Rates (QoQ)
+        •	atq_growth — Asset growth
+        •	revtq_growth — Revenue growth
+        •	niq_growth — Net income growth
+
+3. Sector-Level ETF Features
+    Monthly performance of sector ETFs (mapped via Global Industry Classification):
+        •	etf_price — Sector ETF price at month-end
+        •	etf_return — Monthly ETF return
+
+
+4. Macroeconomic Features (Monthly)
+    We transform macro variables into economically meaningful derivatives:
+
+    (a) Growth Rates
+        •	sp500_ret — Monthly S&P 500 return
+        •	gdp_gr — GDP growth rate
+        •	cpi_infl — Inflation rate (CPI growth)
+
+    (b) Interest Rate Dynamics
+        •	ir3m_chg — Change in short-term interest rate (3-month Treasury)
+        •	ir10y_chg — Change in long-term yield (10-year Treasury yield)
+
+    (c) Market Stress Indicator
+        •	vix_chg — Monthly change in VIX
+
+5. Bond-Specific Features
+
+    Derived directly from bond dataset:
+        •	tmt — Time to maturity
+        •	coupon — Coupon rate
+        •	t_spread — Bond’s credit spread relative to its benchmark
+        •	ytm — Yield-to-maturity (target variable)
+        •	bond_ret — End-of-month bond return
+        •	rating_AA, rating_A, … rating_D — Credit rating dummies
+        •	upgrade, downgrade — Rating transition indicators
+
+6. Missing-Value Handling & Normalization
+    We treat variables as either categorical or numerical:
+
+    Categorical features
+        •	costat_bin
+        •	Bond rating dummies: rating_A, rating_B, …
+        •	Rating transition dummies: upgrade, downgrade
+
+    Binary categoricals → fill per-month median, then encode as {–1, +1}
+
+    Numeric features
+    We first fill NaN with median values within each month, then divide numeric variables into two groups depending on whether they should be rank-normalized or kept in raw form
+
+    | Type  | Features                                           | Normalization                               |
+    |-------|------------------------------------------------------------|----------------------------------------------|
+    | Rank-normalized | stock features, fundamentals, bond features...     | Cross-sectional rank scaled to [−1, 1] |
+    | Not normalized  | macro features                                      | Kept in raw form                        |
+
+
+    After median filling, remaining NaNs are filled with 0.
+    This process ensures consistent feature availability while preventing information leakage.
 
 ### 2.3 Data Splitting
 
