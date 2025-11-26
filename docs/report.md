@@ -66,7 +66,6 @@ Name: ytm_chg, dtype: float64
 The number of observations for each YTM change direction category is as follows: 
 
 ```plaintext
-up_down
 down       435398
 up         399205
 neutral     20166
@@ -94,7 +93,7 @@ We have checked the missingness and uniqueness of these key columns.
 - Credit Ratings: One-hot encoded variables for ratings from AAA to D (rating_A, rating_AA, ..., rating_D). The ratings are weighted averages ratings from WRDS Bond Returns database rather than S&P, Moody's, or Fitch alone.
 - Rating Change Indicators: Binary variables indicating whether there was an upgrade or downgrade in the bond's credit rating in the past month (upgrade, downgrade).
 
-Here, we used lagged values of features except time to maturity and coupon rate to avoid look-ahead bias.
+Here, we used lagged values of features except time to maturity and coupon rate to avoid data leakage.
 
 
 | Variable       | Count     | Mean   | Std    | Min    | 25%    | 50%    | 75%    | Max    |
@@ -184,7 +183,7 @@ For example, to predict YTM changes in 2012, we used data from 2002 to 2011 as t
 
 ### 2.4 Modeling Framework
 
-#### 2.4.1 Regression Models
+**2.4.1 Regression Models**
 
 We implemented and compared the following machine learning models for regression task:
 
@@ -201,8 +200,9 @@ We also implemented a Stacked Regressor that combines predictions from Linear Re
 
 For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
 
+The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
-#### 2.4.2 Classification Models
+**2.4.2 Classification Models**
 
 For classification task, we implemented and compared the following models:
 
@@ -295,3 +295,46 @@ In this project, we explored various machine learning models to predict corporat
 | Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
 | Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
 | Stacked Classifier        |           | 107 minutes 11.9 seconds         |
+
+### A.2 Classification Confusion Matrix
+
+
+The confusion matrixs are as follows:
+
+1. Logistic Regression
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 155404  | 103686  | 264     |
+| **down**            | 54596   | 205732  | 322     |
+| **neutral**         | 3986    | 6213    | 1259    |
+
+
+2. Elastic Net Classification
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 155442  | 103662  | 250     |
+| **down**            | 54610   | 205719  | 321     |
+| **neutral**         | 3990    | 6218    | 1250    |
+
+
+3. LGBM Classifier
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 174264  | 84514   | 576     |
+| **down**            | 58838   | 201267  | 545     |
+| **neutral**         | 2317    | 3105    | 6036    |
+
+
+4. Stacked Classifier
+
+| actual \\ predicted | up      | down    | neutral |
+|---------------------|---------|---------|---------|
+| **up**              | 176566  | 82735   | 53      |
+| **down**            | 62485   | 198119  | 46      |
+| **neutral**         | 3147    | 4741    | 3570    |
+
+
+
