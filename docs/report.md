@@ -9,9 +9,8 @@ The objective of this project is to predict corporate bond yield to maturity (YT
 
 By applying various machine learning regression models such as ElasticNet, Boosting and Multi-layer Perceptron, we aim to improve prediction accuracy compared to traditional linear regression models.
 
-In addition, we used the change direction of YTM as a classification target since there are many outliers in the YTM change values that may affect regression performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
+In addition, we used the change direction of YTM movements as a classification target since there are many outliers in the YTM change values that may affect regression performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
 
----
 
 ## 2. Methodology
 
@@ -46,6 +45,34 @@ The Data is from the "WRDS Bond Returns" database, which provides monthly bond y
 We only consider senior bonds and exclude defaulted bonds. Additionally, the yields exceeding [-1, 1] are treated as outliers and removed from the dataset.
 
 Total number of observations meeting the criteria is approximately 1760852, covering 74191 unique bonds and 3187 unique firms over the sample period.
+
+After merging with firm-level and macroeconomic data, the final dataset contains 12117 unique bonds.
+
+The data descriptive statistics of the yield to maturity (YTM) changes are as follows:
+
+```plaintext
+count    854769.000000
+mean         -0.000005
+std           0.014440
+min          -0.980800
+25%          -0.001840
+50%          -0.000030
+75%           0.001710
+max           0.979029
+Name: ytm_chg, dtype: float64
+
+```
+
+The number of observations for each YTM change direction category is as follows: 
+
+```plaintext
+up_down
+down       435398
+up         399205
+neutral     20166
+Name: count, dtype: int64
+```
+
 
 
 #### 2.1.2 Features
@@ -90,38 +117,82 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 | `upgrade`      | 3.42e+6   | 0.00   | 0.04   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 | `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 
-3. Firm-level features
+3. Firm-level features (yutung)
+
 We incorporate firm-level information at both the daily and quarterly frequency.
 
-• Daily Stock Price and Returns:
+- Daily Stock Price and Returns:
 Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
 
-• Daily Trading Liquidity Measures:
+- Daily Trading Liquidity Measures:
 Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
 
-• Quarterly Accounting Fundamentals:
+- Quarterly Accounting Fundamentals:
 Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
 
-• Firm Identification:
+- Firm Identification:
 The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
 
 4. Macroeconomic features (yuxi)
 
-We augment the bond- and firm-level data with monthly macroeconomic and broad market indicators that capture aggregate risk and business-cycle conditions:
+| Variable | Count |   Mean   |   Std   |    Min   |    25%    |    50%    |    75%    |    Max    |
+|:---------|------:|---------:|--------:|---------:|----------:|----------:|----------:|----------:|
+| SP500    |   335 | 2185.71  | 1418.34 |  735.09  | 1191.41   | 1454.60   | 2772.33   | 6840.20   |
+| IR3M     |   335 |    2.07  |    2.00 |    0.00  |    0.12   |    1.51   |    4.21   |    6.15   |
+| IR10Y    |   335 |    3.44  |    1.37 |    0.54  |    2.30   |    3.53   |    4.49   |    6.67   |
+| VIX      |   335 |   20.29  |    7.82 |    9.51  |   14.45   |   18.43   |   24.44   |   59.89   |
+| GDP      |   328 | 17764.90 | 2911.28 | 12703.74 | 15670.88  | 17035.11  | 20070.68  | 23770.98  |
+| CPI      |   333 |  227.69  |   42.89 |  162.00  |  191.70   |  227.17   |  252.56   |  324.37   |
 
-• Market Index Return and Risk Sentiment: Includes the monthly excess equity market return (sp500_ret) and the monthly change in implied volatility (vix_chg). These variables capture broad stock market performance and shifts in overall risk appetite.
 
-• Interest Rate Level and Term Structure: Includes the level of the 3-month Treasury yield (gs3m), monthly changes in short- and long-term interest rates (ir3m_chg, ir10y_chg), and the term spread between long and short maturities (term_spread). These variables summarize the stance of monetary policy and the shape of the yield curve.
+5. Industry features (yuxi)
 
-• Macroeconomic Conditions: Includes real GDP growth (gdp_gr) and CPI inflation (cpi_infl). These variables proxy for aggregate economic activity and price dynamics that can affect default risk and required real returns.
+| Variable | Count |  Mean   |   Std   |    Min    |    25%    |    50%    |    75%    |    Max    |
+|:---------|------:|--------:|--------:|----------:|----------:|----------:|----------:|----------:|
+| Price    |  3128 |  44.03  |  39.40  |   4.57    |  18.23    |  29.43    |  54.97    | 300.68    |
+| Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
 
-• Sector ETF Prices and Returns: Includes a sector ETF identifier (sector_etf), the associated ETF price level (etf_price), and its monthly return (etf_return). These variables capture industry-level performance and sector-specific shocks that may not be fully reflected in firm-level data.
-
-All macroeconomic and market-wide series are sampled or aggregated at a monthly frequency and merged with the bond panel by calendar month, ensuring that only information available at or before the end of month \(t\) is used to predict YTM changes between \(t\) and \(t+1\).
 
 ### 2.2 Feature Construction (Yutung)
 
-We will standardize continuous features to have zero mean and unit variance. 
+After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
+
+1.Merging Procedure
+    We combine the datasets in the following order to maintain consistent identifiers and time alignment:
+    (1.) Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.
+    (2.) Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.
+    (3.) Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.
+    (4.) Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.
+
+2. Missing-Value Handling
+    After merging, missing values are handled according to variable type:
+
+    Categorical Variables:
+    •   Credit rating dummies (AAA…D)
+    •   Rating transition indicators
+    •   Compustat data-status flag (costat)
+    Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+
+    Numeric Variables:
+    We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
+
+
+3. Normalization
+    (1.) Rank-Normalized Features
+        •   Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
+        •   Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
+        •   For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
+
+
+    (2.) Not Normalized (kept in raw form)
+        Includes macroeconomic indicators and yield-curve variables:
+        •   sp500_ret, gdp_gr, cpi_infl
+        •   ir3m_chg, ir10y_chg
+        •   vix_chg
+        •   gs3m, term_spread
+        These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
+
+
 
 ### 2.3 Data Splitting
 
@@ -139,7 +210,7 @@ We implemented and compared the following machine learning models for regression
 |Linear Regression | Baseline linear model |
 |ElasticNet | Combination of L1 and L2 | 
 |Boosting (LightGBM) | Ensemble of weak learners |
-|Multilayer Perceptron | Feedforward neural network |
+|Multi-layer Perceptron | Feedforward neural network |
 
 Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio using 10-fold cross-validation on the training set. However, we only tuned once based on the first training set and used the same hyperparameters for all other training sets to reduce computation time. This approach was applied to all tuning processes in this project. For the Boosting model, we tuned the hyperparameters using a grid search.
 
@@ -154,13 +225,14 @@ For classification task, we implemented and compared the following models:
 
 | Model | Description |
 |--------|--------------|
-| Linear Regression        | Baseline linear model |
-| ElasticNet               | Combination of L1 and L2 | 
-| Boosting (LightGBM)      | Ensemble of weak learners |
+|Logistic Regression | Linear classification model |
+|ElasticNet Classifier | Combination of L1 and L2 |
+|Boosting Classifier (LightGBM) | Ensemble of weak learners |
 
 Here, we also tuned hyperparameters for ElasticNet Classifier and Boosting Classifier using similar approaches as in regression task.
 
 For the Stacked Classifier, we combined predictions from Logistic Regression, ElasticNet Classifier, and LightGBM Classifier using logistic regression as the meta-model.
+
 
 ### 2.5 Model Evaluation
 
@@ -186,15 +258,16 @@ For classification models, we evaluated performance using:
 
 The table below summarizes the performance of different regression models on the test set:
 
-| Model                  | MSE       | MAE      | MedAE    | $R^2$    |
-|------------------------|-----------|----------|----------|---------|
-| Elastic Net Regression | 0.000093  | 0.003167 | 0.002032 | 0.005956 |
-| LGBM Regressor         | 0.000084  | 0.002817 | 0.001607 | 0.085135 |
-| Linear Regression      | 0.000093  | 0.003171 | 0.002036 | 0.004982 |
-| Stacked Regressor      | 0.000084  | 0.002841 | 0.001607 | 0.063947 |
+| Model                 | MSE       | MAE      | MedAE    | $R^2$        |
+|-----------------------|-----------|----------|----------|-----------|
+| Elastic Net Regression | 0.000093 | 0.003167 | 0.002032 | 0.005956  |
+| LGBM Regressor        | 0.000084 | 0.002817 | 0.001607 | 0.085135  |
+| Linear Regression     | 0.000093 | 0.003171 | 0.002036 | 0.004982  |
+| Stacked Regressor     | 0.000084 | 0.002841 | 0.001607 | 0.063947  |
 | Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
+
 The multilayer perceptron (MLP) attains test errors between those of the linear models and LightGBM, providing additional evidence that some nonlinear structure is present in YTM changes, although tree-based ensembles appear to exploit it more effectively in our current setup.
 
 
@@ -214,6 +287,28 @@ In classification tasks, both the Elastic Net Classifier and Logistic Regression
 
 ### 4. Conclusion
 
-In this project, we explored a range of machine learning models to predict corporate bond yield-to-maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our results show that ensemble methods such as LightGBM consistently outperform traditional linear models in both regression and classification tasks, while regularization techniques like ElasticNet do not provide material improvements over the linear regression benchmark in this setting. The multilayer perceptron achieves test errors between those of the linear models and LightGBM, suggesting that there is some nonlinear structure in YTM changes that a neural network can exploit, although tree-based ensembles appear to leverage this structure more effectively under our current feature set and evaluation scheme.
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
 
-Overall, the performance gains across all models are modest: even the best-performing methods only reduce prediction errors by a limited margin relative to simple baselines. This indicates that a substantial portion of corporate bond YTM changes may be driven by noise or unobserved factors that are not captured by our variables. To achieve more meaningful improvements in predictive accuracy, future work may require cleaner and more granular data, richer feature representations (e.g., textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
+
+## Appendix: 
+
+### A.1 Implementation Details
+
+1. Software and Libraries
+- CPU: MacBook Pro (Apple M4 Pro)
+- Programming Language: Python 3.13
+- Libraries: pandas, numpy, scikit-learn, lightgbm, tensorflow/keras
+- Code Repository: Github [https://github.com/QinqinAndMacaulayCat/ml_project/tree/main]
+
+2. Computation Time For Each Model (Approximate)
+
+| Model                 | Tuning | Time for Training and Prediction |
+|-----------------------|-----------|------------------------------|
+| Linear Regression     |           | 3.9 seconds              |
+| Elastic Net Regression |      | 1 minute 10 seconds         |
+| LGBM Regressor        |  31 minutes 41.4 seconds    | 58.3 seconds|
+| Stacked Regressor     |           | 6 minutes 50 seconds         |
+| Logistic Regression       |           | 1 minute 30 seconds              |
+| Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
+| Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
+| Stacked Classifier        |           | 107 minutes 11.9 seconds         |
