@@ -11,7 +11,6 @@ By applying various machine learning regression models such as ElasticNet, Boost
 
 In addition, we used the change direction of YTM as a classification target since there are many outliers in the YTM change values that may affect regression performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
 
----
 
 ## 2. Methodology
 
@@ -91,18 +90,19 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 | `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 
 3. Firm-level features
+
 We incorporate firm-level information at both the daily and quarterly frequency.
 
-• Daily Stock Price and Returns:
+- Daily Stock Price and Returns:
 Includes the daily closing stock price (PRC), daily stock return (RET), and trading volume (VOL). These variables capture short-term market performance and trading activity.
 
-• Daily Trading Liquidity Measures:
+- Daily Trading Liquidity Measures:
 Includes the daily bid and ask quotes (BIDLO, ASKHI) and the number of trades (NUMTRD) as indicators of market liquidity.
 
-• Quarterly Accounting Fundamentals:
+- Quarterly Accounting Fundamentals:
 Includes total assets (atq), total liabilities (ltq), common equity (ceqq), shares outstanding (cshoq), and quarterly net income (niq). These variables summarize the firm’s financial position and profitability at the quarterly reporting date.
 
-• Firm Identification:
+- Firm Identification:
 The PERMNO identifier is present in both daily stock data and quarterly fundamental data, enabling direct alignment of firm-level information across time.
 
 4. Macroeconomic features (yuxi)
@@ -115,84 +115,84 @@ To enhance bond yield prediction, we construct a comprehensive set of features f
     Derived from CRSP daily data and aggregated to monthly frequency:
 
     (a) Price & Return
-        •	stock_ret — Monthly stock return (product of daily returns − 1).
-        •	stock_vol — Monthly volatility (standard deviation of daily log returns).
-        •	dvol — Total monthly dollar trading volume.
-        •	stock_price_mean — Average daily price within the month.
+        -	stock_ret - Monthly stock return (product of daily returns − 1).
+        -	stock_vol - Monthly volatility (standard deviation of daily log returns).
+        -	dvol - Total monthly dollar trading volume.
+        -	stock_price_mean - Average daily price within the month.
 
     (b) Liquidity Measures
-        •	turnover — Monthly average turnover.
-        •	bidask — Monthly average bid–ask spread.
-        •	numtrades — Number of trades summed over the month.
-        •	stock_mktcap — Market capitalization at month end (PRC × SHR_OUT).
+        -	turnover - Monthly average turnover.
+        -	bidask - Monthly average bid–ask spread.
+        -	numtrades - Number of trades summed over the month.
+        -	stock_mktcap - Market capitalization at month end (PRC × SHR_OUT).
 
 2. Quarterly Accounting Fundamentals (Forward-Filled Monthly)
     Original Compustat variables resampled to month-end:
 
     (a) Raw Accounting Fundamentals
-        •	atq — Total assets
-        •	ltq — Total liabilities
-        •	ceqq — Common equity
-        •	cshoq — Shares outstanding
-        •	niq — Net income
-        •	oibdpq — Operating income before depreciation
-        •	revtq — Revenue
-        •	xintq — Interest expense
-        •	prccq — Closing price (quarterly)
+        -	atq - Total assets
+        -	ltq - Total liabilities
+        -	ceqq - Common equity
+        -	cshoq - Shares outstanding
+        -	niq - Net income
+        -	oibdpq - Operating income before depreciation
+        -	revtq - Revenue
+        -	xintq - Interest expense
+        -	prccq - Closing price (quarterly)
 
     (b) Derived Financial Ratios
-        •	log_atq — Log total assets
-        •	lev_total — Leverage ratio (ltq / atq)
-        •	equity_ratio — Equity-to-assets ratio (ceqq / atq)
-        •	roa — Return on assets (niq / atq)
-        •	profit_margin — Net margin (niq / revtq)
-        •	int_coverage — Interest coverage (oibdpq / xintq)
-        •	accounting_mktcap — Accounting-based market cap (prccq × cshoq)
+        -	log_atq - Log total assets
+        -	lev_total - Leverage ratio (ltq / atq)
+        -	equity_ratio - Equity-to-assets ratio (ceqq / atq)
+        -	roa - Return on assets (niq / atq)
+        -	profit_margin - Net margin (niq / revtq)
+        -	int_coverage - Interest coverage (oibdpq / xintq)
+        -	accounting_mktcap - Accounting-based market cap (prccq × cshoq)
 
     (c) Growth Rates (QoQ)
-        •	atq_growth — Asset growth
-        •	revtq_growth — Revenue growth
-        •	niq_growth — Net income growth
+        -	atq_growth - Asset growth
+        -	revtq_growth - Revenue growth
+        -	niq_growth - Net income growth
 
 3. Sector-Level ETF Features
     Monthly performance of sector ETFs (mapped via Global Industry Classification):
-        •	etf_price — Sector ETF price at month-end
-        •	etf_return — Monthly ETF return
+        -	etf_price - Sector ETF price at month-end
+        -	etf_return - Monthly ETF return
 
 
 4. Macroeconomic Features (Monthly)
     We transform macro variables into economically meaningful derivatives:
 
     (a) Growth Rates
-        •	sp500_ret — Monthly S&P 500 return
-        •	gdp_gr — GDP growth rate
-        •	cpi_infl — Inflation rate (CPI growth)
+        -	sp500_ret - Monthly S&P 500 return
+        -	gdp_gr - GDP growth rate
+        -	cpi_infl - Inflation rate (CPI growth)
 
     (b) Interest Rate Dynamics
-        •	ir3m_chg — Change in short-term interest rate (3-month Treasury)
-        •	ir10y_chg — Change in long-term yield (10-year Treasury yield)
+        -	ir3m_chg - Change in short-term interest rate (3-month Treasury)
+        -	ir10y_chg - Change in long-term yield (10-year Treasury yield)
 
     (c) Market Stress Indicator
-        •	vix_chg — Monthly change in VIX
+        -	vix_chg - Monthly change in VIX
 
 5. Bond-Specific Features
 
     Derived directly from bond dataset:
-        •	tmt — Time to maturity
-        •	coupon — Coupon rate
-        •	t_spread — Bond’s credit spread relative to its benchmark
-        •	ytm — Yield-to-maturity (target variable)
-        •	bond_ret — End-of-month bond return
-        •	rating_AA, rating_A, … rating_D — Credit rating dummies
-        •	upgrade, downgrade — Rating transition indicators
+        -	tmt - Time to maturity
+        -	coupon - Coupon rate
+        -	t_spread - Bond’s credit spread relative to its benchmark
+        -	ytm - Yield-to-maturity (target variable)
+        -	bond_ret - End-of-month bond return
+        -	rating_AA, rating_A, … rating_D - Credit rating dummies
+        -	upgrade, downgrade - Rating transition indicators
 
 6. Missing-Value Handling & Normalization
     We treat variables as either categorical or numerical:
 
     Categorical features
-        •	costat_bin
-        •	Bond rating dummies: rating_A, rating_B, …
-        •	Rating transition dummies: upgrade, downgrade
+        -	costat_bin
+        -	Bond rating dummies: rating_A, rating_B, …
+        -	Rating transition dummies: upgrade, downgrade
 
     Binary categoricals → fill per-month median, then encode as {–1, +1}
 
@@ -230,6 +230,8 @@ Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio 
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
 
+For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
+
 
 #### 2.4.2 Classification Models
 
@@ -244,6 +246,7 @@ For classification task, we implemented and compared the following models:
 Here, we also tuned hyperparameters for ElasticNet Classifier and Boosting Classifier using similar approaches as in regression task.
 
 For the Stacked Classifier, we combined predictions from Logistic Regression, ElasticNet Classifier, and LightGBM Classifier using logistic regression as the meta-model.
+
 
 ### 2.5 Model Evaluation
 
@@ -275,8 +278,12 @@ The table below summarizes the performance of different regression models on the
 | LGBM Regressor        | 0.000084 | 0.002817 | 0.001607 | 0.085135  |
 | Linear Regression     | 0.000093 | 0.003171 | 0.002036 | 0.004982  |
 | Stacked Regressor     | 0.000084 | 0.002841 | 0.001607 | 0.063947  |
+| Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
+
+The multilayer perceptron (MLP) attains test errors between those of the linear models and LightGBM, providing additional evidence that some nonlinear structure is present in YTM changes, although tree-based ensembles appear to exploit it more effectively in our current setup.
+
 
 ### 3.2 Classification Results
 
@@ -294,4 +301,4 @@ In classification tasks, both the Elastic Net Classifier and Logistic Regression
 
 ### 4. Conclusion
 
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. 
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
