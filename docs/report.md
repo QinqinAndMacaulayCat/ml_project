@@ -107,6 +107,17 @@ The PERMNO identifier is present in both daily stock data and quarterly fundamen
 
 4. Macroeconomic features (yuxi)
 
+We augment the bond- and firm-level data with monthly macroeconomic and broad market indicators that capture aggregate risk and business-cycle conditions:
+
+• Market Index Return and Risk Sentiment: Includes the monthly excess equity market return (sp500_ret) and the monthly change in implied volatility (vix_chg). These variables capture broad stock market performance and shifts in overall risk appetite.
+
+• Interest Rate Level and Term Structure: Includes the level of the 3-month Treasury yield (gs3m), monthly changes in short- and long-term interest rates (ir3m_chg, ir10y_chg), and the term spread between long and short maturities (term_spread). These variables summarize the stance of monetary policy and the shape of the yield curve.
+
+• Macroeconomic Conditions: Includes real GDP growth (gdp_gr) and CPI inflation (cpi_infl). These variables proxy for aggregate economic activity and price dynamics that can affect default risk and required real returns.
+
+• Sector ETF Prices and Returns: Includes a sector ETF identifier (sector_etf), the associated ETF price level (etf_price), and its monthly return (etf_return). These variables capture industry-level performance and sector-specific shocks that may not be fully reflected in firm-level data.
+
+All macroeconomic and market-wide series are sampled or aggregated at a monthly frequency and merged with the bond panel by calendar month, ensuring that only information available at or before the end of month \(t\) is used to predict YTM changes between \(t\) and \(t+1\).
 
 ### 2.2 Feature Construction (Yutung)
 
@@ -128,11 +139,13 @@ We implemented and compared the following machine learning models for regression
 |Linear Regression | Baseline linear model |
 |ElasticNet | Combination of L1 and L2 | 
 |Boosting (LightGBM) | Ensemble of weak learners |
-|Multi-layer Perceptron | Feedforward neural network |
+|Multilayer Perceptron | Feedforward neural network |
 
 Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio using 10-fold cross-validation on the training set. However, we only tuned once based on the first training set and used the same hyperparameters for all other training sets to reduce computation time. This approach was applied to all tuning processes in this project. For the Boosting model, we tuned the hyperparameters using a grid search.
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
+
+For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
 
 
 #### 2.4.2 Classification Models
@@ -141,9 +154,9 @@ For classification task, we implemented and compared the following models:
 
 | Model | Description |
 |--------|--------------|
-|Logistic Regression | Linear classification model |
-|ElasticNet Classifier | Combination of L1 and L2 |
-|Boosting Classifier (LightGBM) | Ensemble of weak learners |
+| Linear Regression        | Baseline linear model |
+| ElasticNet               | Combination of L1 and L2 | 
+| Boosting (LightGBM)      | Ensemble of weak learners |
 
 Here, we also tuned hyperparameters for ElasticNet Classifier and Boosting Classifier using similar approaches as in regression task.
 
@@ -173,14 +186,17 @@ For classification models, we evaluated performance using:
 
 The table below summarizes the performance of different regression models on the test set:
 
-| Model                 | MSE       | MAE      | MedAE    | $R^2$        |
-|-----------------------|-----------|----------|----------|-----------|
-| Elastic Net Regression | 0.000093 | 0.003167 | 0.002032 | 0.005956  |
-| LGBM Regressor        | 0.000084 | 0.002817 | 0.001607 | 0.085135  |
-| Linear Regression     | 0.000093 | 0.003171 | 0.002036 | 0.004982  |
-| Stacked Regressor     | 0.000084 | 0.002841 | 0.001607 | 0.063947  |
+| Model                  | MSE       | MAE      | MedAE    | $R^2$    |
+|------------------------|-----------|----------|----------|---------|
+| Elastic Net Regression | 0.000093  | 0.003167 | 0.002032 | 0.005956 |
+| LGBM Regressor         | 0.000084  | 0.002817 | 0.001607 | 0.085135 |
+| Linear Regression      | 0.000093  | 0.003171 | 0.002036 | 0.004982 |
+| Stacked Regressor      | 0.000084  | 0.002841 | 0.001607 | 0.063947 |
+| Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
+The multilayer perceptron (MLP) attains test errors between those of the linear models and LightGBM, providing additional evidence that some nonlinear structure is present in YTM changes, although tree-based ensembles appear to exploit it more effectively in our current setup.
+
 
 ### 3.2 Classification Results
 
@@ -198,4 +214,6 @@ In classification tasks, both the Elastic Net Classifier and Logistic Regression
 
 ### 4. Conclusion
 
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. 
+In this project, we explored a range of machine learning models to predict corporate bond yield-to-maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our results show that ensemble methods such as LightGBM consistently outperform traditional linear models in both regression and classification tasks, while regularization techniques like ElasticNet do not provide material improvements over the linear regression benchmark in this setting. The multilayer perceptron achieves test errors between those of the linear models and LightGBM, suggesting that there is some nonlinear structure in YTM changes that a neural network can exploit, although tree-based ensembles appear to leverage this structure more effectively under our current feature set and evaluation scheme.
+
+Overall, the performance gains across all models are modest: even the best-performing methods only reduce prediction errors by a limited margin relative to simple baselines. This indicates that a substantial portion of corporate bond YTM changes may be driven by noise or unobserved factors that are not captured by our variables. To achieve more meaningful improvements in predictive accuracy, future work may require cleaner and more granular data, richer feature representations (e.g., textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
