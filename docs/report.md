@@ -209,9 +209,9 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
     After merging, missing values are handled according to variable type:
 
     Categorical Variables:
-    - Credit rating dummies (AAA…D)
-    - Rating transition indicators
-    - Compustat data-status flag (costat)
+    -  Credit rating dummies (AAA…D)
+    -  Rating transition indicators
+    -  Compustat data-status flag (costat)
     Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
 
     Numeric Variables:
@@ -219,19 +219,21 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
 
 
 3. Normalization
+   
     (1.) Rank-Normalized Features
-        - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
-        - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
-        - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
+   - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
+   - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
+   - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
 
 
     (2.) Not Normalized (kept in raw form)
-        Includes macroeconomic indicators and yield-curve variables:
-        - sp500_ret, gdp_gr, cpi_infl
-        - ir3m_chg, ir10y_chg
-        - vix_chg
-        - gs3m, term_spread
-        These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
+   Includes macroeconomic indicators and yield-curve variables:
+   -  sp500_ret, gdp_gr, cpi_infl
+   -  ir3m_chg, ir10y_chg
+   -  vix_chg
+   -   s3m, term_spread
+     
+   These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
 
 
 
