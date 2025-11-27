@@ -155,25 +155,28 @@ These variables summarize capital structure, profitability, solvency, and valuat
 - niq_growth — Net income growth (profitability momentum).
 These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
 
-| Variable           | Count   | Mean    | Std     | Min       | 25%       | 50%       | 75%       | Max        |
-|-------------------|---------|---------|---------|-----------|-----------|-----------|-----------|------------|
-| stock_ret         | 866,997 | 0.01    | 0.09    | -0.85     | -0.03     | 0.01      | 0.05      | 4.75       |
-| stock_vol         | 866,997 | 0.02    | 0.01    | 0.00      | 0.01      | 0.01      | 0.02      | 0.92       |
-| dvol              | 866,997 | 8.24e9  | 2.18e10 | 0.00      | 1.34e9    | 3.52e9    | 7.90e9    | 7.99e11    |
-| stock_price_mean  | 866,997 | 432.61  | 10023.2 | -484.85   | 32.42     | 53.72     | 90.37     | 616,729.9  |
-| turnover          | 866,997 | 9.18    | 24.62   | 0.00      | 4.62      | 6.28      | 9.37      | 1,570.73   |
-| bidask            | 866,997 | 0.02    | 0.02    | 0.00      | 0.02      | 0.02      | 0.03      | 0.36       |
-| numtrades         | 866,997 | 193,014 | 1.05e6  | 0.00      | 0.00      | 0.00      | 0.00      | 29,055,600 |
-| stock_mktcap      | 866,997 | 6.78e7  | 1.85e8  | 1033.45   | 8.31e6    | 2.28e7    | 5.79e7    | 3.07e9     |
-| log_atq           | 866,997 | 10.41   | 1.56    | 3.91      | 9.46      | 10.30     | 11.21     | 15.19      |
-| lev_total         | 866,997 | 0.70    | 0.18    | 0.15      | 0.59      | 0.68      | 0.80      | 4.30       |
-| equity_ratio      | 866,997 | 0.29    | 0.18    | -3.30     | 0.19      | 0.31      | 0.40      | 0.85       |
-| roa               | 866,997 | 0.01    | 0.02    | -4.85     | 0.00      | 0.01      | 0.02      | 1.40       |
-| profit_margin     | 866,997 | -4.52e6 | 6.19e8  | -2.82e11  | 0.05      | 0.09      | 0.14      | 3.05e9     |
-| int_coverage      | 866,997 | 12.93   | 99.17   | -859.33   | 5.65      | 9.00      | 12.99     | 14,841.0   |
-| accounting_mktcap | 866,997 | 70,786  | 186,209 | 3.47      | 9,617     | 25,005    | 61,211    | 3,035,217  |
-| market_to_book    | 866,997 | 1.87e7  | 5.80e9  | -10,390   | 1.45      | 2.32      | 3.86      | 1.80e12    |
-| atq_growth        | 866,997 | 0.02    | 0.10    | -0.88     | -0.01     | 0.01      | 0.02      | 10.27      |
+| Variable          | Mean      | Std       | Min        | 25%       | 50%       | 75%       | Max        |
+|------------------|-----------|-----------|------------|-----------|-----------|-----------|------------|
+| stock_ret        | 0.000814  | 0.1162    | -0.3446    | -0.05181  | 0.002060  | 0.05164   | 0.3881     |
+| stock_vol        | 0.02420   | 0.01729   | 0          | 0.01106   | 0.01978   | 0.03373   | 0.07639    |
+| dvol             | 4.720e8   | 1.338e9   | 0          | 3.564e6   | 2.814e7    | 2.269e8   | 9.083e9    |
+| stock_price_mean | 27.89     | 33.39     | 0.4247     | 7.503     | 17.41     | 34.67     | 202.7      |
+| turnover         | 10.55     | 20.04     | 0.1046     | 2.171     | 5.032     | 10.39     | 151.0      |
+| bidask           | 0.03700   | 0.03154   | 0.001359   | 0.01481   | 0.02762   | 0.04922   | 0.1571     |
+| numtrades        | 2.353e4   | 7.754e4   | 0          | 0         | 0         | 5060      | 5.375e5    |
+| stock_mktcap     | 2.558e6   | 7.306e6   | 2612       | 6.575e4   | 2.860e5    | 1.336e6   | 5.040e7    |
+| log_atq          | 5.966     | 2.271     | 1.059      | 4.265     | 5.935     | 7.575     | 11.88      |
+| lev_total        | 0.5453    | 0.2667    | 0.04291    | 0.3332    | 0.5433    | 0.7454    | 1.437      |
+| equity_ratio     | 0.4682    | 0.2518    | 0.03758    | 0.2655    | 0.4584    | 0.6722    | 0.9650     |
+| roa              | -0.01096  | 0.06202   | -0.4176    | -0.009717 | 0.004190  | 0.01634   | 0.1046     |
+| profit_margin    | -0.06739  | 0.5065    | -4.911     | -0.03240  | 0.03624   | 0.09573   | 0.8525     |
+| int_coverage     | 7.883     | 10.21     | -9.713     | 2.324     | 4.903     | 9.881     | 78.47      |
+| mkt_cap          | 3631      | 2.366e4   | 0.01500    | 55.60     | 249.9     | 1257      | 4.330e6    |
+| market_to_book   | 2.865     | 3.123     | 0.2618     | 1.144     | 1.846     | 3.275     | 26.64      |
+| atq_growth       | 0.03060   | 0.2174    | -1.000     | -0.02359  | 0.005846  | 0.04315   | 4.966      |
+| revtq_growth     | 0.05943   | 0.3745    | -1.000     | -0.05785  | 0.01596   | 0.1119    | 5.000      |
+| niq_growth       | -0.1108   | 1.158     | -5.000     | -0.5378   | -0.03266  | 0.2378    | 5.000      |
+
 
 
 4. Macroeconomic features (yuxi)
@@ -220,44 +223,44 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
 
 1. Merging Procedure  
 
-We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
+    We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
 
-- Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
-- Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
-- Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
-- Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
+    - Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
+    - Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
+    - Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
+    - Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
 
 2. Missing-Value Handling
 
-After merging, missing values are handled according to variable type:
+    After merging, missing values are handled according to variable type:
 
-Categorical Variables:
+    Categorical Variables:
 
--  Credit rating dummies (AAA…D)
--  Rating transition indicators
--  Compustat data-status flag (costat)
-Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+    -  Credit rating dummies (AAA…D)
+    -  Rating transition indicators
+    -  Compustat data-status flag (costat)
+    Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
 
-Numeric Variables: We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
+    Numeric Variables: We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
 
 
 3. Normalization
 
-(1) Rank-Normalized Features
+    (1) Rank-Normalized Features
 
-- Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
-- Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
-- For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
+    - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
+    - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
+    - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
 
 
-(2) Not Normalized (kept in raw form) includes macroeconomic indicators and yield-curve variables:
+    (2) Not Normalized (kept in raw form) includes macroeconomic indicators and yield-curve variables:
 
--  sp500_ret, gdp_gr, cpi_infl
--  ir3m_chg, ir10y_chg
--  vix_chg
--   s3m, term_spread
-     
-These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
+    -  sp500_ret, gdp_gr, cpi_infl
+    -  ir3m_chg, ir10y_chg
+    -  vix_chg
+    -   s3m, term_spread
+        
+        These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
 
 
 ### 2.3 Data Splitting
