@@ -285,7 +285,7 @@ Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio 
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
 
-For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
+For the Multilayer Perceptron (MLP), we use the same rank-normalized predictors as in the other regression models (bond-level, firm-level, and sector-level features), together with the raw macro variables. The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time.
 
 The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
@@ -330,17 +330,17 @@ For classification models, we evaluated performance using:
 
 The table below summarizes the performance of different regression models on the test set:
 
-| Model                 | MSE       | MAE      | MedAE    | $R^2$        |
-|-----------------------|-----------|----------|----------|-----------|
-| Elastic Net Regression | 0.000093 | 0.003167 | 0.002032 | 0.005956  |
-| LGBM Regressor        | 0.000084 | 0.002817 | 0.001607 | 0.085135  |
-| Linear Regression     | 0.000093 | 0.003171 | 0.002036 | 0.004982  |
-| Stacked Regressor     | 0.000084 | 0.002841 | 0.001607 | 0.063947  |
-| Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
+| Model                  | MSE       | MAE      | MedAE    | $R^2$     |
+|------------------------|-----------|----------|----------|----------|
+| Elastic Net Regression | 0.000093  | 0.003167 | 0.002032 | 0.005956 |
+| LGBM Regressor         | 0.000084  | 0.002817 | 0.001607 | 0.085135 |
+| Linear Regression      | 0.000093  | 0.003171 | 0.002036 | 0.004982 |
+| Stacked Regressor      | 0.000084  | 0.002841 | 0.001607 | 0.063947 |
+| Multilayer Perceptron  | 0.000262  | 0.005025 | 0.002683 | 0.013985 |
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
 
-The multilayer perceptron (MLP) attains test errors between those of the linear models and LightGBM, providing additional evidence that some nonlinear structure is present in YTM changes, although tree-based ensembles appear to exploit it more effectively in our current setup.
+The multilayer perceptron (MLP) underperforms all other models in the rolling experiment, with noticeably higher MSE/MAE and only a modest $R^2 \approx 0.014$. This suggests that, given our current feature set and simple network architecture, a feed-forward neural network does not extract additional predictive structure beyond what linear models and tree-based ensembles already capture, and may even be more prone to fitting noise.
 
 
 ### 3.2 Classification Results
@@ -374,22 +374,24 @@ In this project, we explored various machine learning models to predict corporat
 
 2. Computation Time For Each Model (Approximate)
 
-| Model                 | Tuning      | Time for Training and Prediction |
-|-----------------------|-------------------|-------------------------|
-| Linear Regression     |           | 3.9 seconds              |
-| Elastic Net Regression |      | 1 minute 10 seconds         |
-| LGBM Regressor        |  31 minutes 41.4 seconds    | 58.3 seconds|
-| Stacked Regressor     |           | 6 minutes 50 seconds         |
-| Logistic Regression       |           | 1 minute 30 seconds              |
-| Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
-| Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
-| Stacked Classifier |           | 107 minutes 11.9 seconds         |
+| Model                      | Tuning                    | Time for Training and Prediction |
+|----------------------------|---------------------------|----------------------------------|
+| Linear Regression          |                           | 3.9 seconds                      |
+| Elastic Net Regression     |                           | 1 minute 10 seconds              |
+| LGBM Regressor             | 31 minutes 41.4 seconds   | 58.3 seconds                     |
+| Stacked Regressor          |                           | 6 minutes 50 seconds             |
+| Logistic Regression        |                           | 1 minute 30 seconds              |
+| Elastic Net Classification | 83 minutes 59.8 seconds   | 23 minutes 40.7 seconds          |
+| Boosting Classifier        | 114 minutes 48.8 seconds  | 1 minute 27.9 seconds            |
+| Stacked Classifier         |                           | 107 minutes 11.9 seconds         |
+| Multilayer Perceptron      |                           | 3 minutes 16 seconds             |
+
 
 ### B.1 Classification Confusion Matrix
 
 The confusion matrixs are as follows:
 
-1. Logistic Regression
+1. Logistic Classification
 
 | actual \\ predicted | up      | down    | neutral |
 |---------------------|---------|---------|---------|
