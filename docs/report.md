@@ -16,7 +16,7 @@ In addition, we used the change direction of YTM movements as a classification t
 
 ### 2.1 Data Description
 
-We will utilize data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequence is monthly and data range is from July 2002 to February 2025.
+We utilized data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequence is monthly and data range is from July 2002 to February 2025.
 
 We totally have 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the target variable and features are described below.
 
@@ -117,7 +117,7 @@ Here, we used lagged values of features except time to maturity and coupon rate 
 | `upgrade`      | 3.42e+6   | 0.00   | 0.04   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 | `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
 
-3. Firm-level features (yutung)
+3. Firm-level features
 
 
 We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
@@ -207,7 +207,7 @@ These features capture firm momentum and fundamental acceleration, which are kno
 | GDP      |   328 | 17764.90 | 2911.28 | 12703.74 | 15670.88  | 17035.11  | 20070.68  | 23770.98  |
 | CPI      |   333 |  227.69  |   42.89 |  162.00  |  191.70   |  227.17   |  252.56   |  324.37   |
 
-5. Industry features (yuxi)
+5. Industry features
 
 - Sector ETF Price and Return (price, return):  
   For each bond, we link a sector ETF based on its GICS sector, and use the ETF’s monthly price (`price`) and monthly return (`return`) to proxy for sector-level performance and sector-specific shocks that may not be fully captured by firm-level variables.
@@ -217,7 +217,7 @@ These features capture firm momentum and fundamental acceleration, which are kno
 | Price    |  3128 |  44.03  |  39.40  |   4.57    |  18.23    |  29.43    |  54.97    | 300.68    |
 | Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
 
-### 2.2 Feature Construction (Yutung)
+### 2.2 Feature Construction
 
 After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
 
@@ -265,7 +265,9 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
 
 ### 2.3 Data Splitting
 
-In this project, we used a rolling window forecasting approach similar to our homework. At each year, we used a time-series split to create training, validation, and test sets. The training set consisted of 10 years of data, the validation set and test set each consisted of 1 year of data. When tuning is not involved, the validation set was combined with the training set to train the final model. 
+In this project, we used a rolling window forecasting approach. At each year, we used a time-series split to create training, validation, and test sets. The training set consisted of 10 years of data, the validation set and test set each consisted of 1 year of data. At each year, we tuned hyperparameters based on training set and validation set, then forecast target variables in the test set.
+
+When tuning is not involved or cross-validation is adopted, the validation set was combined with the training set to train the final model. 
 For example, to predict YTM changes in 2012, we used data from 2002 to 2011 as the training set, data from 2012 as the validation set, and data from 2013 as the test set. Then, to predict YTM changes in 2013, we used data from 2003 to 2012 as the training set, data from 2013 as the validation set, and data from 2014 as the test set. This process was repeated until we predicted YTM changes in 2024.
 
 ### 2.4 Modeling Framework
@@ -281,7 +283,7 @@ We implemented and compared the following machine learning models for regression
 |Boosting (LightGBM) | Ensemble of weak learners |
 |Multi-layer Perceptron | Feedforward neural network |
 
-Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio using 10-fold cross-validation on the training set. However, we only tuned once based on the first training set and used the same hyperparameters for all other training sets to reduce computation time. This approach was applied to all tuning processes in this project. For the Boosting model, we tuned the hyperparameters using a grid search.
+Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio using 10-fold cross-validation on the training set. 
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
 
@@ -330,12 +332,12 @@ For classification models, we evaluated performance using:
 
 The table below summarizes the performance of different regression models on the test set:
 
-| Model                 | MSE       | MAE      | MedAE    | $R^2$        |
-|-----------------------|-----------|----------|----------|-----------|
-| Elastic Net Regression | 0.000093 | 0.003167 | 0.002032 | 0.005956  |
-| LGBM Regressor        | 0.000084 | 0.002817 | 0.001607 | 0.085135  |
-| Linear Regression     | 0.000093 | 0.003171 | 0.002036 | 0.004982  |
-| Stacked Regressor     | 0.000084 | 0.002841 | 0.001607 | 0.063947  |
+| Model              |      MSE     |    MAE     |   MedAE   |     $R^2$      |
+|--------------------|--------------|------------|-----------|-------------|
+| ElasticNet         | 0.000097     | 0.003107   | 0.001900  | -0.019272   |
+| LGBMRegressor      | 0.000089     | 0.003069   | 0.001620  | -0.109083   |
+| LinearRegression   | 0.000094     | 0.003226   | 0.002065  | 0.001753    |
+| StackingRegressor  | 0.000086     | 0.002959   | 0.001591  | -0.008823   |
 | Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
@@ -347,12 +349,13 @@ The multilayer perceptron (MLP) attains test errors between those of the linear 
 
 As we mentioned before, we defined the target variable for classification as the direction of YTM changes (up, neutral, down) to mitigate the impact of outliers. The table below summarizes the performance of different classification models on the test set:
 
-| Model                      | Accuracy | Precision | Recall   |
-|---------------------------|----------|-----------|----------|
-| Elastic Net Classification| 0.682760 | 0.694127  | 0.682760 |
-| LGBM Classifier           | 0.713273 | 0.722421  | 0.713273 |
-| Logistic Regression       | 0.682736 | 0.694145  | 0.682736 |
-| Stacked Classifier        | 0.706753 | 0.718828  | 0.706753 |
+
+| Model                 | Accuracy  | Precision | Recall   |
+|-----------------------|-----------|-----------|----------|
+| Elastic Net Classifier | 0.687915 | 0.686969  | 0.687915 |
+| LGBM Classifier        | 0.713470 | 0.719949  | 0.713470 |
+| Logistic Regression    | 0.687858 | 0.687190  | 0.687858 |
+| Stacking Classifier    | 0.713615 | 0.720544  | 0.713615 |
 
 In classification tasks, both the Elastic Net Classifier and Logistic Regression models exhibited similar performance, which is consistent with the regression results. The LGBM Classifier outperformed the other models, achieving the highest accuracy, precision, and recall. The Stacked Classifier also showed strong performance, although it did not exceed the LGBM Classifier.
 
@@ -391,38 +394,38 @@ The confusion matrixs are as follows:
 
 1. Logistic Regression
 
-| actual \\ predicted | up      | down    | neutral |
-|---------------------|---------|---------|---------|
-| **up**              | 155404  | 103686  | 264     |
-| **down**            | 54596   | 205732  | 322     |
-| **neutral**         | 3986    | 6213    | 1259    |
+| Actual \ Pred |    Up   |   Down  | Neutral |
+|---------------|---------|---------|---------|
+| Up            | 155810  | 103344  |   200   |
+| Down          |  52584  | 207780  |   286   |
+| Neutral       |   4410  |   6969  |    79   |
 
 
 2. Elastic Net Classification
 
-| actual \\ predicted | up      | down    | neutral |
-|---------------------|---------|---------|---------|
-| **up**              | 155442  | 103662  | 250     |
-| **down**            | 54610   | 205719  | 321     |
-| **neutral**         | 3990    | 6218    | 1250    |
+| Actual \ Pred |    Up   |   Down  | Neutral |
+|---------------|---------|---------|---------|
+| Up            | 155781  | 103385  |   188   |
+| Down          |  52524  | 207861  |   265   |
+| Neutral       |   4418  |   6975  |    65   |
 
 
 3. LGBM Classifier
 
-| actual \\ predicted | up      | down    | neutral |
-|---------------------|---------|---------|---------|
-| **up**              | 174264  | 84514   | 576     |
-| **down**            | 58838   | 201267  | 545     |
-| **neutral**         | 2317    | 3105    | 6036    |
+| Actual \ Pred |    Up   |   Down  | Neutral |
+|---------------|---------|---------|---------|
+| Up            | 176082  |  82742  |   530   |
+| Down          |  62480  | 197594  |   576   |
+| Neutral       |   2382  |   3005  |  6071   |
 
 
 4. Stacked Classifier
 
-| actual \\ predicted | up      | down    | neutral |
-|---------------------|---------|---------|---------|
-| **up**              | 176566  | 82735   | 53      |
-| **down**            | 62485   | 198119  | 46      |
-| **neutral**         | 3147    | 4741    | 3570    |
+| Actual \ Pred |    Up   |   Down  | Neutral |
+|---------------|---------|---------|---------|
+| Up            | 178684  |  80475  |   195   |
+| Down          |  64062  | 196423  |   165   |
+| Neutral       |   3217  |   4005  |  4236   |
 
 
 
