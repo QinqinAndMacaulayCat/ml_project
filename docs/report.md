@@ -144,7 +144,7 @@ These features reflect firm-level market performance, trading activity, and liqu
 - profit_margin — Net profit margin = net income ÷ revenue.
 - int_coverage — Ability to service debt = operating income ÷ interest expense.
 - mkt_cap — Accounting-based market cap = prccq × cshoq.
-- market_to_book — Valuation ratio = (market cap ÷ common equity).
+- market_to_book (m2b) — Valuation ratio = (market cap ÷ common equity).
 These variables summarize capital structure, profitability, solvency, and valuation.
 
 
@@ -157,25 +157,25 @@ These features capture firm momentum and fundamental acceleration, which are kno
 
 | Variable          | Mean      | Std       | Min        | 25%       | 50%       | 75%       | Max        |
 |------------------|-----------|-----------|------------|-----------|-----------|-----------|------------|
-| stock_ret        | 0.000814  | 0.1162    | -0.3446    | -0.05181  | 0.002060  | 0.05164   | 0.3881     |
+| stock_ret        | 0.00081  | 0.1162    | -0.3446    | -0.052  | 0.00206  | 0.05164   | 0.3881     |
 | stock_vol        | 0.02420   | 0.01729   | 0          | 0.01106   | 0.01978   | 0.03373   | 0.07639    |
 | dvol             | 4.720e8   | 1.338e9   | 0          | 3.564e6   | 2.814e7    | 2.269e8   | 9.083e9    |
-| stock_price_mean | 27.89     | 33.39     | 0.4247     | 7.503     | 17.41     | 34.67     | 202.7      |
+| price_mean | 27.89     | 33.39     | 0.4247     | 7.503     | 17.41     | 34.67     | 202.7      |
 | turnover         | 10.55     | 20.04     | 0.1046     | 2.171     | 5.032     | 10.39     | 151.0      |
-| bidask           | 0.03700   | 0.03154   | 0.001359   | 0.01481   | 0.02762   | 0.04922   | 0.1571     |
+| bidask           | 0.03700   | 0.03154   | 0.00136   | 0.01481   | 0.02762   | 0.04922   | 0.1571     |
 | numtrades        | 2.353e4   | 7.754e4   | 0          | 0         | 0         | 5060      | 5.375e5    |
 | stock_mktcap     | 2.558e6   | 7.306e6   | 2612       | 6.575e4   | 2.860e5    | 1.336e6   | 5.040e7    |
 | log_atq          | 5.966     | 2.271     | 1.059      | 4.265     | 5.935     | 7.575     | 11.88      |
 | lev_total        | 0.5453    | 0.2667    | 0.04291    | 0.3332    | 0.5433    | 0.7454    | 1.437      |
 | equity_ratio     | 0.4682    | 0.2518    | 0.03758    | 0.2655    | 0.4584    | 0.6722    | 0.9650     |
-| roa              | -0.01096  | 0.06202   | -0.4176    | -0.009717 | 0.004190  | 0.01634   | 0.1046     |
-| profit_margin    | -0.06739  | 0.5065    | -4.911     | -0.03240  | 0.03624   | 0.09573   | 0.8525     |
+| roa              | -0.011  | 0.06202   | -0.4176    | -0.001 | 0.00419  | 0.01634   | 0.1046     |
+| profit_margin    | -0.067  | 0.5065    | -4.911     | -0.032  | 0.03624   | 0.09573   | 0.8525     |
 | int_coverage     | 7.883     | 10.21     | -9.713     | 2.324     | 4.903     | 9.881     | 78.47      |
-| mkt_cap          | 3631      | 2.366e4   | 0.01500    | 55.60     | 249.9     | 1257      | 4.330e6    |
-| market_to_book   | 2.865     | 3.123     | 0.2618     | 1.144     | 1.846     | 3.275     | 26.64      |
-| atq_growth       | 0.03060   | 0.2174    | -1.000     | -0.02359  | 0.005846  | 0.04315   | 4.966      |
-| revtq_growth     | 0.05943   | 0.3745    | -1.000     | -0.05785  | 0.01596   | 0.1119    | 5.000      |
-| niq_growth       | -0.1108   | 1.158     | -5.000     | -0.5378   | -0.03266  | 0.2378    | 5.000      |
+| mkt_cap          | 3631      | 2.366e4   | 0.0150   | 55.60     | 249.9     | 1257      | 4.330e6    |
+| m2b   | 2.865     | 3.123     | 0.2618     | 1.144     | 1.846     | 3.275     | 26.64      |
+| atq_growth       | 0.0306   | 0.2174    | -1.000     | -0.023  | 0.00585  | 0.04315   | 4.966      |
+| revtq_growth     | 0.0594   | 0.3745    | -1.000     | -0.058  | 0.01596   | 0.1119    | 5.000      |
+| niq_growth       | -0.111   | 1.158     | -5.000     | -0.538   | -0.033  | 0.2378    | 5.000      |
 
 
 
@@ -287,7 +287,7 @@ Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio 
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
 
-For the Multilayer Perceptron (MLP), we first standardized all continuous predictors using the training-set mean and standard deviation, and clipped extreme standardized values to a bounded range before feeding them into the network. The MLP is a small fully connected feedforward neural network with ReLU activation, trained with mean squared error loss and the Adam optimizer using early stopping based on validation loss. Due to the higher computational cost of neural networks, the MLP was estimated on a separate 80/20 time split rather than within the rolling-window framework, so its results are reported as a complementary single-split experiment rather than being directly comparable to the rolling-window averages of the other regression models.
+For the Multilayer Perceptron (MLP), we use the same rank-normalized predictors as in the other regression models (bond-level, firm-level, and sector-level features), together with the raw macro variables. The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time.
 
 The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
@@ -342,7 +342,7 @@ The table below summarizes the performance of different regression models on the
 
 The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
 
-The multilayer perceptron (MLP) attains test errors between those of the linear models and LightGBM, providing additional evidence that some nonlinear structure is present in YTM changes, although tree-based ensembles appear to exploit it more effectively in our current setup.
+The multilayer perceptron (MLP) underperforms all other models in the rolling experiment, with noticeably higher MSE/MAE and only a modest $R^2 \approx 0.014$. This suggests that, given our current feature set and simple network architecture, a feed-forward neural network does not extract additional predictive structure beyond what linear models and tree-based ensembles already capture, and may even be more prone to fitting noise.
 
 
 ### 3.2 Classification Results
@@ -377,22 +377,24 @@ In this project, we explored various machine learning models to predict corporat
 
 2. Computation Time For Each Model (Approximate)
 
-| Model                 | Tuning      | Time for Training and Prediction |
-|-----------------------|-------------------|-------------------------|
-| Linear Regression     |           | 3.9 seconds              |
-| Elastic Net Regression |      | 1 minute 10 seconds         |
-| LGBM Regressor        |  31 minutes 41.4 seconds    | 58.3 seconds|
-| Stacked Regressor     |           | 6 minutes 50 seconds         |
-| Logistic Regression       |           | 1 minute 30 seconds              |
-| Elastic Net Classification|  83 minutes 59.8 seconds    | 23 minutes 40.7 seconds         |
-| Boosting Classifier | 114 minutes 48.8 seconds    | 1 minute 27.9 seconds         |
-| Stacked Classifier |           | 107 minutes 11.9 seconds         |
+| Model                      | Tuning                    | Time for Training and Prediction |
+|----------------------------|---------------------------|----------------------------------|
+| Linear Regression          |                           | 3.9 seconds                      |
+| Elastic Net Regression     |                           | 1 minute 10 seconds              |
+| LGBM Regressor             | 31 minutes 41.4 seconds   | 58.3 seconds                     |
+| Stacked Regressor          |                           | 6 minutes 50 seconds             |
+| Logistic Regression        |                           | 1 minute 30 seconds              |
+| Elastic Net Classification | 83 minutes 59.8 seconds   | 23 minutes 40.7 seconds          |
+| Boosting Classifier        | 114 minutes 48.8 seconds  | 1 minute 27.9 seconds            |
+| Stacked Classifier         |                           | 107 minutes 11.9 seconds         |
+| Multilayer Perceptron      |                           | 3 minutes 16 seconds             |
+
 
 ### B.1 Classification Confusion Matrix
 
 The confusion matrixs are as follows:
 
-1. Logistic Regression
+1. Logistic Classification
 
 | Actual \ Pred |    Up   |   Down  | Neutral |
 |---------------|---------|---------|---------|
