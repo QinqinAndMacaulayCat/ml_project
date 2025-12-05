@@ -186,6 +186,8 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/cm/cmti12.tfm
+INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/tfm/public/cm/cmbxti10.tfm
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/tex/latex/base/omscmr.fd
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/tex/latex/base/omscmr.fd
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/tex/latex/base/omscmr.fd
@@ -197,6 +199,7 @@ INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/publi
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb
+INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb
 INPUT /opt/homebrew/Cellar/texlive/20250308_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb
