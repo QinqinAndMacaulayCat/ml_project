@@ -221,7 +221,7 @@ In this project, we explored various machine learning models to predict corporat
 \appendix
 \section{Appendix}
 
-\subsection{A.1 Implementation Details}
+\subsection{Implementation Details}
 
 \begin{enumerate}
     \item \textbf{Software and Libraries}
@@ -257,7 +257,7 @@ Multilayer Perceptron & 38 minutes 48 seconds \\
     \item \textbf{AI Tools Used: } We used ChatGPT for drafting and refining report text, and GitHub Copilot for code suggestions and completions.
 \end{enumerate}
 
-\subsection{B.1 Predictor List}
+\subsection{Predictor List}
 
 \textbf{1. Key Columns}
 
@@ -289,7 +289,7 @@ Date & End of Month Date. \\
 \texttt{coupon} & The annual coupon rate of the bond. \\
 \texttt{t\_spread} & The weighted average bid-ask spread of the bond which measures liquidity. \\
 \texttt{return\_eom} & Bond return of last month. \\
-Credit Ratings & One-hot encoded variables for ratings from AAA to D. \\
+Credit Ratings & One-hot encoded variables for ratings including \texttt{AAA}, \texttt{AA}, \texttt{A}, \texttt{BBB}, \texttt{BB}, \texttt{B}, \texttt{CCC}, \texttt{CC}, \texttt{C}, and \texttt{D}. \\
 \texttt{upgrade} & Binary variables indicating if the bond was upgraded in the last month. \\
 \texttt{downgrade} & Binary variables indicating if the bond was downgraded in the last month. \\
 \bottomrule
@@ -299,8 +299,6 @@ Credit Ratings & One-hot encoded variables for ratings from AAA to D. \\
 
 \textbf{3. Firm-level features}
 
-We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat).
-
 \begin{singlespace}
 \begin{table}[H]
 \centering
@@ -308,7 +306,7 @@ We incorporate firm-level information from both daily stock data (CRSP) and quar
 \label{tab:firm_features}
 \begin{tabular}{l p{10cm}}
 \toprule
-\textbf{Variable} & \textbf{Description} \\
+\textbf{Field Name} & \textbf{Description} \\
 \midrule
 \multicolumn{2}{l}{\textit{\textbf{Stock Market Features}}} \\
 \texttt{ret} & Monthly stock return accumulated from daily returns. \\
@@ -343,46 +341,34 @@ We incorporate firm-level information from both daily stock data (CRSP) and quar
 
 \textbf{4. Macroeconomic features}
 
-\begin{singlespace}
 \begin{table}[H]
 \centering
-\caption{Description of Firm-level Features}
-\label{tab:firm_features}
+\caption{Description of Macroeconomic Features}
+\label{tab:macroeconomic_features}
 \begin{tabular}{l p{10cm}}
 \toprule
-\textbf{Variable} & \textbf{Description} \\
+\textbf{Field Name} & \textbf{Description} \\
 \midrule
-\multicolumn{2}{l}{\textit{\textbf{Stock Market Features}}} \\
-\texttt{ret} & Monthly stock return accumulated from daily returns. \\
-\texttt{vol} & Monthly return volatility, calculated as the standard deviation of daily log returns. \\
-\texttt{dvol} & Dollar trading volume, calculated as price multiplied by shares traded. \\
-\texttt{turnover} & Share turnover ratio, defined as shares traded divided by shares outstanding. \\
-\texttt{bidask} & Bid-ask spread based on daily closing bid and ask quotes, measuring liquidity cost. \\
-\texttt{numtrades} & Total number of trades executed in the month. \\
-\texttt{mktcap} & Month-end market capitalization (Price $\times$ Shares Outstanding). \\
-\texttt{price\_mean} & The average daily closing stock price over the month. \\
-\addlinespace
+\texttt{sp500} &
+Monthly level of the S\&P 500 index, capturing overall equity market conditions and risk appetite. \\[0.5em]
 
-\multicolumn{2}{l}{\textit{\textbf{Accounting-Based Derived Indicators}}} \\
-\texttt{log\_atq} & Natural logarithm of total assets, used as a proxy for firm size. \\
-\texttt{lev\_total} & Total leverage ratio, calculated as total liabilities divided by total assets. \\
-\texttt{equity\_ratio} & Equity-to-assets ratio, calculated as total common equity divided by total assets. \\
-\texttt{roa} & Return on Assets (ROA), defined as net income divided by total assets. \\
-\texttt{profit\_margin} & Net profit margin, calculated as net income divided by total revenue. \\
-\texttt{int\_coverage} & Interest coverage ratio, defined as operating income divided by interest expense. \\
-\texttt{mkt\_cap} & Accounting-based market capitalization. \\
-\texttt{market\_to\_book} & Market-to-book ratio, calculated as market capitalization divided by book equity. \\
-\addlinespace
+\texttt{ir3m} &
+Monthly average 3-month Treasury yield, representing short-term risk-free rates and monetary policy stance. \\[0.5em]
 
-\multicolumn{2}{l}{\textit{\textbf{Growth Indicators (QoQ)}}} \\
-\texttt{atq\_growth} & Quarter-over-quarter growth rate of total assets. \\
-\texttt{revtq\_growth} & Quarter-over-quarter growth rate of total revenue. \\
-\texttt{niq\_growth} & Quarter-over-quarter growth rate of net income. \\
+\texttt{ir10y} &
+Monthly average 10-year Treasury yield, reflecting long-term discount rates relevant for bond valuation. \\[0.5em]
+
+\texttt{vix} &
+Monthly average VIX index, measuring market-implied volatility and broad risk aversion. \\[0.5em]
+
+\texttt{gdp} &
+Real GDP level or growth, aligned to each month, summarizing aggregate economic activity. \\[0.5em]
+
+\texttt{cpi} &
+Consumer Price Index (level or change), measuring inflation conditions relevant for nominal yields and real required returns. \\
 \bottomrule
 \end{tabular}
 \end{table}
-\end{singlespace}
-
 
 \textbf{5. Industry features}
 
