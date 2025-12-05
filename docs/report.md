@@ -18,10 +18,7 @@ In addition, we used the change direction of YTM movements as a classification t
 
 We utilized data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequence is monthly and data range is from July 2002 to February 2025.
 
-We totally have 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the target variable and features are described below.
-
-
-#### 2.1.1 Target Variable
+We totally have 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the predictors are listed in the appendix.
 
 The target variable is the corporate bond yield to maturity (YTM) change, defined as the difference in YTM over a one-month horizon:
 
@@ -41,14 +38,9 @@ neutral, & \text{if } \Delta \text{YTM}_i \approx 0 \\
 down, & \text{if } \Delta \text{YTM}_i < -1e-6
 \end{cases}
 $$
+ 
 
-The Data is from the "WRDS Bond Returns" database, which provides monthly bond yields and other bond characteristics, sourced from TRACE and Mergent FISD. The dataset has been cleaned and more suitable for analysis. 
-
-We only consider senior bonds and exclude defaulted bonds. Additionally, the yields exceeding [-1, 1] are treated as outliers and removed from the dataset.
-
-Total number of observations meeting the criteria is approximately 1760852, covering 74191 unique bonds and 3187 unique firms over the sample period.
-
-After merging with firm-level and macroeconomic data, the final dataset contains 12117 unique bonds.
+Total number of observations after merging all datasets is approximately 854769, covering 12117 unique bonds over the sample period.
 
 The data descriptive statistics of the yield to maturity (YTM) changes are as follows:
 
@@ -61,8 +53,6 @@ min          -0.980800
 50%          -0.000030
 75%           0.001710
 max           0.979029
-Name: ytm_chg, dtype: float64
-
 ```
 
 The number of observations for each YTM change direction category is as follows: 
@@ -71,151 +61,9 @@ The number of observations for each YTM change direction category is as follows:
 down       435398
 up         399205
 neutral     20166
-Name: count, dtype: int64
 ```
 
 
-#### 2.1.2 Features
-
-1. Key Columns
-
-- Bond Identifier: CUSIP
-- Firm Identifier: PERMNO
-- Date: End of Month
-
-We have checked the missingness and uniqueness of these key columns.
-
-2. Bond-level features
-
-- Time to Maturity (tmt): the remaining time to maturity of the bond in years.
-- Coupon Rate (coupon): the annual coupon rate of the bond.
-- t_spread: the weighted average bid-ask spread of the bond which measures liquidity.
-- return_eom: bond return of last month. 
-- Credit Ratings: One-hot encoded variables for ratings from AAA to D (rating_A, rating_AA, ..., rating_D). The ratings are weighted averages ratings from WRDS Bond Returns database rather than S&P, Moody's, or Fitch alone.
-- Rating Change Indicators: Binary variables indicating whether there was an upgrade or downgrade in the bond's credit rating in the past month (upgrade, downgrade).
-
-Here, we used lagged values of features except time to maturity and coupon rate to avoid data leakage.
-
-
-| Variable       | Count     | Mean   | Std    | Min    | 25%    | 50%    | 75%    | Max    |
-|----------------|-----------|--------|--------|--------|--------|--------|--------|--------|
-| `tmt`          | 3.56e+6   | 6.35   | 8.67   | 0.00   | 1.61   | 3.54   | 6.89   | 102.13 |
-| `coupon`       | 3.56e+6   | 0.03   | 0.03   | 0.00   | 0.00   | 0.03   | 0.06   | 0.34   |
-| `t_spread`     | 1.79e+6   | 0.01   | 0.01   | 0.00   | 0.00   | 0.00   | 0.01   | 2.00   |
-| `yield`        | 3.39e+6   | 0.01   | 0.13   | -1.00  | 0.00   | 0.03   | 0.05   | 1.00   |
-| `ret_eom`      | 3.42e+6   | 0.01   | 1.18   | -1.00  | 0.00   | 0.00   | 0.01   | 2090.0 |
-| `rating_A`     | 3.42e+6   | 0.20   | 0.40   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_AA`    | 3.42e+6   | 0.04   | 0.21   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_AAA`   | 3.42e+6   | 0.01   | 0.09   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_B`     | 3.42e+6   | 0.03   | 0.16   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_BB`    | 3.42e+6   | 0.04   | 0.20   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_BBB`   | 3.42e+6   | 0.23   | 0.42   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_C`     | 3.42e+6   | 0.00   | 0.02   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_CC`    | 3.42e+6   | 0.00   | 0.03   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_CCC`   | 3.42e+6   | 0.01   | 0.09   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `rating_D`     | 3.42e+6   | 0.00   | 0.02   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `upgrade`      | 3.42e+6   | 0.00   | 0.04   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-| `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
-
-3. Firm-level features
-
-
-We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
-
-(1) Stock Market Features (Monthly Aggregated)
-
-- ret — Monthly stock return (accumulated from daily returns).
-- vol — Monthly return volatility (std of daily log returns).
-- dvol — Dollar trading volume (price × shares traded).
-- turnover — Trading turnover (shares traded ÷ shares outstanding).
-- bidask — Bid–ask spread based on daily midquotes.
-- numtrades — Number of trades in the month.
-- mktcap — Month-end market capitalization.
-- price_mean — Average daily stock price.
-
-These features reflect firm-level market performance, trading activity, and liquidity conditions.
-
-(2) Accounting-Based Derived Indicators (Monthly Filled)
-
-- log_atq — Log total assets (firm size proxy).
-- lev_total — Leverage ratio = total liabilities ÷ total assets.
-- equity_ratio — Equity-to-assets ratio.
-- roa — Profitability = net income ÷ total assets.
-- profit_margin — Net profit margin = net income ÷ revenue.
-- int_coverage — Ability to service debt = operating income ÷ interest expense.
-- mkt_cap — Accounting-based market cap = prccq × cshoq.
-- market_to_book (m2b) — Valuation ratio = (market cap ÷ common equity).
-These variables summarize capital structure, profitability, solvency, and valuation.
-
-
-(3) Growth Indicators (QoQ)
-
-- atq_growth — Asset growth (decomposition of balance-sheet expansion).
-- revtq_growth — Revenue growth (sales momentum).
-- niq_growth — Net income growth (profitability momentum).
-These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
-
-| Variable          | Mean      | Std       | Min        | 25%       | 50%       | 75%       | Max        |
-|------------------|-----------|-----------|------------|-----------|-----------|-----------|------------|
-| stock_ret        | 0.00081  | 0.1162    | -0.3446    | -0.052  | 0.00206  | 0.05164   | 0.3881     |
-| stock_vol        | 0.02420   | 0.01729   | 0          | 0.01106   | 0.01978   | 0.03373   | 0.07639    |
-| dvol             | 4.720e8   | 1.338e9   | 0          | 3.564e6   | 2.814e7    | 2.269e8   | 9.083e9    |
-| price_mean | 27.89     | 33.39     | 0.4247     | 7.503     | 17.41     | 34.67     | 202.7      |
-| turnover         | 10.55     | 20.04     | 0.1046     | 2.171     | 5.032     | 10.39     | 151.0      |
-| bidask           | 0.03700   | 0.03154   | 0.00136   | 0.01481   | 0.02762   | 0.04922   | 0.1571     |
-| numtrades        | 2.353e4   | 7.754e4   | 0          | 0         | 0         | 5060      | 5.375e5    |
-| stock_mktcap     | 2.558e6   | 7.306e6   | 2612       | 6.575e4   | 2.860e5    | 1.336e6   | 5.040e7    |
-| log_atq          | 5.966     | 2.271     | 1.059      | 4.265     | 5.935     | 7.575     | 11.88      |
-| lev_total        | 0.5453    | 0.2667    | 0.04291    | 0.3332    | 0.5433    | 0.7454    | 1.437      |
-| equity_ratio     | 0.4682    | 0.2518    | 0.03758    | 0.2655    | 0.4584    | 0.6722    | 0.9650     |
-| roa              | -0.011  | 0.06202   | -0.4176    | -0.001 | 0.00419  | 0.01634   | 0.1046     |
-| profit_margin    | -0.067  | 0.5065    | -4.911     | -0.032  | 0.03624   | 0.09573   | 0.8525     |
-| int_coverage     | 7.883     | 10.21     | -9.713     | 2.324     | 4.903     | 9.881     | 78.47      |
-| mkt_cap          | 3631      | 2.366e4   | 0.0150   | 55.60     | 249.9     | 1257      | 4.330e6    |
-| m2b   | 2.865     | 3.123     | 0.2618     | 1.144     | 1.846     | 3.275     | 26.64      |
-| atq_growth       | 0.0306   | 0.2174    | -1.000     | -0.023  | 0.00585  | 0.04315   | 4.966      |
-| revtq_growth     | 0.0594   | 0.3745    | -1.000     | -0.058  | 0.01596   | 0.1119    | 5.000      |
-| niq_growth       | -0.111   | 1.158     | -5.000     | -0.538   | -0.033  | 0.2378    | 5.000      |
-
-
-
-4. Macroeconomic features (yuxi)
-- Equity Market Return (sp500):  
-  Monthly level of a broad U.S. equity index (S&P 500), used to capture overall stock market conditions and risk appetite.
-
-- Short-Term Interest Rate (ir3m):  
-  Monthly average of the 3-month Treasury yield, serving as the short end of the risk-free term structure and a proxy for monetary policy stance.
-
-- Long-Term Interest Rate (ir10y):  
-  Monthly average of the 10-year Treasury yield, capturing long-term discount rates relevant for bond valuation.
-
-- Implied Volatility (vix):  
-  Monthly average of the VIX index, measuring market-implied equity volatility and shifts in aggregate risk aversion.
-
-- Real Economic Activity (gdp):  
-  Real GDP level (or growth, depending on transformation) aligned to the month of observation, summarizing aggregate economic conditions.
-
-- Inflation (cpi):  
-  Consumer Price Index level (or inflation rate) matched to each month, capturing the inflation environment relevant for nominal yields and real required returns.
-
-| Variable | Count |   Mean   |   Std   |    Min   |    25%    |    50%    |    75%    |    Max    |
-|:---------|------:|---------:|--------:|---------:|----------:|----------:|----------:|----------:|
-| SP500    |   335 | 2185.71  | 1418.34 |  735.09  | 1191.41   | 1454.60   | 2772.33   | 6840.20   |
-| IR3M     |   335 |    2.07  |    2.00 |    0.00  |    0.12   |    1.51   |    4.21   |    6.15   |
-| IR10Y    |   335 |    3.44  |    1.37 |    0.54  |    2.30   |    3.53   |    4.49   |    6.67   |
-| VIX      |   335 |   20.29  |    7.82 |    9.51  |   14.45   |   18.43   |   24.44   |   59.89   |
-| GDP      |   328 | 17764.90 | 2911.28 | 12703.74 | 15670.88  | 17035.11  | 20070.68  | 23770.98  |
-| CPI      |   333 |  227.69  |   42.89 |  162.00  |  191.70   |  227.17   |  252.56   |  324.37   |
-
-5. Industry features
-
-- Sector ETF Price and Return (price, return):  
-  For each bond, we link a sector ETF based on its GICS sector, and use the ETF’s monthly price (`price`) and monthly return (`return`) to proxy for sector-level performance and sector-specific shocks that may not be fully captured by firm-level variables.
-
-| Variable | Count |  Mean   |   Std   |    Min    |    25%    |    50%    |    75%    |    Max    |
-|:---------|------:|--------:|--------:|----------:|----------:|----------:|----------:|----------:|
-| Price    |  3128 |  44.03  |  39.40  |   4.57    |  18.23    |  29.43    |  54.97    | 300.68    |
-| Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
 
 ### 2.2 Feature Construction
 
@@ -388,6 +236,146 @@ In this project, we explored various machine learning models to predict corporat
 | Boosting Classifier        | 114 minutes 48.8 seconds  | 1 minute 27.9 seconds            |
 | Stacked Classifier         |                           | 107 minutes 11.9 seconds         |
 | Multilayer Perceptron      |                           | 3 minutes 16 seconds             |
+
+### B.1 Predictor List
+
+1. Key Columns
+
+| Field Name | Full Name | Description |
+|------------|-----------|-------------|
+| CUSIP | Committee on Uniform Securities Identification Procedures | Unique 9-digit identifier for each bond, used to track bond-level attributes and returns. |
+| PERMNO | Permanent Number | Unique firm-level identifier from CRSP, linking each bond to its issuing firm. |
+| Date | End of Month Date | The month-end observation date for which bond yields, returns, and explanatory variables are recorded. |
+
+2. Bond-level features
+
+- Time to Maturity (tmt): the remaining time to maturity of the bond in years.
+- Coupon Rate (coupon): the annual coupon rate of the bond.
+- t_spread: the weighted average bid-ask spread of the bond which measures liquidity.
+- return_eom: bond return of last month. 
+- Credit Ratings: One-hot encoded variables for ratings from AAA to D (rating_A, rating_AA, ..., rating_D). The ratings are weighted averages ratings from WRDS Bond Returns database rather than S&P, Moody's, or Fitch alone.
+- Rating Change Indicators: Binary variables indicating whether there was an upgrade or downgrade in the bond's credit rating in the past month (upgrade, downgrade).
+
+
+| Variable       | Count     | Mean   | Std    | Min    | 25%    | 50%    | 75%    | Max    |
+|----------------|-----------|--------|--------|--------|--------|--------|--------|--------|
+| `tmt`          | 3.56e+6   | 6.35   | 8.67   | 0.00   | 1.61   | 3.54   | 6.89   | 102.13 |
+| `coupon`       | 3.56e+6   | 0.03   | 0.03   | 0.00   | 0.00   | 0.03   | 0.06   | 0.34   |
+| `t_spread`     | 1.79e+6   | 0.01   | 0.01   | 0.00   | 0.00   | 0.00   | 0.01   | 2.00   |
+| `yield`        | 3.39e+6   | 0.01   | 0.13   | -1.00  | 0.00   | 0.03   | 0.05   | 1.00   |
+| `ret_eom`      | 3.42e+6   | 0.01   | 1.18   | -1.00  | 0.00   | 0.00   | 0.01   | 2090.0 |
+| `rating_A`     | 3.42e+6   | 0.20   | 0.40   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_AA`    | 3.42e+6   | 0.04   | 0.21   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_AAA`   | 3.42e+6   | 0.01   | 0.09   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_B`     | 3.42e+6   | 0.03   | 0.16   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_BB`    | 3.42e+6   | 0.04   | 0.20   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_BBB`   | 3.42e+6   | 0.23   | 0.42   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_C`     | 3.42e+6   | 0.00   | 0.02   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_CC`    | 3.42e+6   | 0.00   | 0.03   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_CCC`   | 3.42e+6   | 0.01   | 0.09   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `rating_D`     | 3.42e+6   | 0.00   | 0.02   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `upgrade`      | 3.42e+6   | 0.00   | 0.04   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+| `downgrade`    | 3.42e+6   | 0.00   | 0.05   | 0.00   | 0.00   | 0.00   | 0.00   | 1.00   |
+
+3. Firm-level features
+
+
+We incorporate firm-level information from both daily stock data (CRSP) and quarterly accounting data (Compustat). These datasets provide market-based signals and fundamental characteristics of the issuing firms. We then construct additional financial ratios and growth indicators used as predictors.
+
+(1) Stock Market Features (Monthly Aggregated)
+
+- ret — Monthly stock return (accumulated from daily returns).
+- vol — Monthly return volatility (std of daily log returns).
+- dvol — Dollar trading volume (price × shares traded).
+- turnover — Trading turnover (shares traded ÷ shares outstanding).
+- bidask — Bid–ask spread based on daily midquotes.
+- numtrades — Number of trades in the month.
+- mktcap — Month-end market capitalization.
+- price_mean — Average daily stock price.
+
+These features reflect firm-level market performance, trading activity, and liquidity conditions.
+
+(2) Accounting-Based Derived Indicators (Monthly Filled)
+
+- log_atq — Log total assets (firm size proxy).
+- lev_total — Leverage ratio = total liabilities ÷ total assets.
+- equity_ratio — Equity-to-assets ratio.
+- roa — Profitability = net income ÷ total assets.
+- profit_margin — Net profit margin = net income ÷ revenue.
+- int_coverage — Ability to service debt = operating income ÷ interest expense.
+- mkt_cap — Accounting-based market cap = prccq × cshoq.
+- market_to_book (m2b) — Valuation ratio = (market cap ÷ common equity).
+These variables summarize capital structure, profitability, solvency, and valuation.
+
+
+(3) Growth Indicators (QoQ)
+
+- atq_growth — Asset growth (decomposition of balance-sheet expansion).
+- revtq_growth — Revenue growth (sales momentum).
+- niq_growth — Net income growth (profitability momentum).
+These features capture firm momentum and fundamental acceleration, which are known predictive signals in credit and bond return literature.
+
+| Variable          | Mean      | Std       | Min        | 25%       | 50%       | 75%       | Max        |
+|------------------|-----------|-----------|------------|-----------|-----------|-----------|------------|
+| stock_ret        | 0.00081  | 0.1162    | -0.3446    | -0.052  | 0.00206  | 0.05164   | 0.3881     |
+| stock_vol        | 0.02420   | 0.01729   | 0          | 0.01106   | 0.01978   | 0.03373   | 0.07639    |
+| dvol             | 4.720e8   | 1.338e9   | 0          | 3.564e6   | 2.814e7    | 2.269e8   | 9.083e9    |
+| price_mean | 27.89     | 33.39     | 0.4247     | 7.503     | 17.41     | 34.67     | 202.7      |
+| turnover         | 10.55     | 20.04     | 0.1046     | 2.171     | 5.032     | 10.39     | 151.0      |
+| bidask           | 0.03700   | 0.03154   | 0.00136   | 0.01481   | 0.02762   | 0.04922   | 0.1571     |
+| numtrades        | 2.353e4   | 7.754e4   | 0          | 0         | 0         | 5060      | 5.375e5    |
+| stock_mktcap     | 2.558e6   | 7.306e6   | 2612       | 6.575e4   | 2.860e5    | 1.336e6   | 5.040e7    |
+| log_atq          | 5.966     | 2.271     | 1.059      | 4.265     | 5.935     | 7.575     | 11.88      |
+| lev_total        | 0.5453    | 0.2667    | 0.04291    | 0.3332    | 0.5433    | 0.7454    | 1.437      |
+| equity_ratio     | 0.4682    | 0.2518    | 0.03758    | 0.2655    | 0.4584    | 0.6722    | 0.9650     |
+| roa              | -0.011  | 0.06202   | -0.4176    | -0.001 | 0.00419  | 0.01634   | 0.1046     |
+| profit_margin    | -0.067  | 0.5065    | -4.911     | -0.032  | 0.03624   | 0.09573   | 0.8525     |
+| int_coverage     | 7.883     | 10.21     | -9.713     | 2.324     | 4.903     | 9.881     | 78.47      |
+| mkt_cap          | 3631      | 2.366e4   | 0.0150   | 55.60     | 249.9     | 1257      | 4.330e6    |
+| m2b   | 2.865     | 3.123     | 0.2618     | 1.144     | 1.846     | 3.275     | 26.64      |
+| atq_growth       | 0.0306   | 0.2174    | -1.000     | -0.023  | 0.00585  | 0.04315   | 4.966      |
+| revtq_growth     | 0.0594   | 0.3745    | -1.000     | -0.058  | 0.01596   | 0.1119    | 5.000      |
+| niq_growth       | -0.111   | 1.158     | -5.000     | -0.538   | -0.033  | 0.2378    | 5.000      |
+
+
+
+4. Macroeconomic features (yuxi)
+- Equity Market Return (sp500):  
+  Monthly level of a broad U.S. equity index (S&P 500), used to capture overall stock market conditions and risk appetite.
+
+- Short-Term Interest Rate (ir3m):  
+  Monthly average of the 3-month Treasury yield, serving as the short end of the risk-free term structure and a proxy for monetary policy stance.
+
+- Long-Term Interest Rate (ir10y):  
+  Monthly average of the 10-year Treasury yield, capturing long-term discount rates relevant for bond valuation.
+
+- Implied Volatility (vix):  
+  Monthly average of the VIX index, measuring market-implied equity volatility and shifts in aggregate risk aversion.
+
+- Real Economic Activity (gdp):  
+  Real GDP level (or growth, depending on transformation) aligned to the month of observation, summarizing aggregate economic conditions.
+
+- Inflation (cpi):  
+  Consumer Price Index level (or inflation rate) matched to each month, capturing the inflation environment relevant for nominal yields and real required returns.
+
+| Variable | Count |   Mean   |   Std   |    Min   |    25%    |    50%    |    75%    |    Max    |
+|:---------|------:|---------:|--------:|---------:|----------:|----------:|----------:|----------:|
+| SP500    |   335 | 2185.71  | 1418.34 |  735.09  | 1191.41   | 1454.60   | 2772.33   | 6840.20   |
+| IR3M     |   335 |    2.07  |    2.00 |    0.00  |    0.12   |    1.51   |    4.21   |    6.15   |
+| IR10Y    |   335 |    3.44  |    1.37 |    0.54  |    2.30   |    3.53   |    4.49   |    6.67   |
+| VIX      |   335 |   20.29  |    7.82 |    9.51  |   14.45   |   18.43   |   24.44   |   59.89   |
+| GDP      |   328 | 17764.90 | 2911.28 | 12703.74 | 15670.88  | 17035.11  | 20070.68  | 23770.98  |
+| CPI      |   333 |  227.69  |   42.89 |  162.00  |  191.70   |  227.17   |  252.56   |  324.37   |
+
+5. Industry features
+
+- Sector ETF Price and Return (price, return):  
+  For each bond, we link a sector ETF based on its GICS sector, and use the ETF’s monthly price (`price`) and monthly return (`return`) to proxy for sector-level performance and sector-specific shocks that may not be fully captured by firm-level variables.
+
+| Variable | Count |  Mean   |   Std   |    Min    |    25%    |    50%    |    75%    |    Max    |
+|:---------|------:|--------:|--------:|----------:|----------:|----------:|----------:|----------:|
+| Price    |  3128 |  44.03  |  39.40  |   4.57    |  18.23    |  29.43    |  54.97    | 300.68    |
+| Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
 
 
 ### B.1 Classification Confusion Matrix
