@@ -149,7 +149,7 @@ Multi-layer Perceptron
 \end{table}
 \end{singlespace}
 
-The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time. The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
+The MLP is implemented as a small fully connected feed-forward network with ReLU hidden layers and a single linear output, trained with mean squared error loss using the Adam optimizer. In each rolling window, we re-fit the MLP on that window and evaluate it on the next year, using an internal validation split within the training window for early stopping. This setup keeps the MLP directly comparable to the other regression models while controlling training time, which is why we do not include it in the stacked regressor.
 
 \subsubsection{Classification Models}
 For classification task, we implemented and compared the following models:
@@ -178,8 +178,7 @@ For classification models, performance metrics included: Accuracy, Precision, an
 \section{Results and Discussion}
 
 \subsection{Regression Results}
-The Elastic Net Regression model does not significantly outperform the Linear Regression benchmark, indicating that regularization alone provides only limited gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only modest incremental predictability from these nonlinear ensembles.
-The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
+Across the regression models, tree-based ensembles deliver the strongest performance. The boosting regressor and stacking regressor, both based on LightGBM, achieve the lowest rolling-window MSE (around $8.6$--$8.9\times 10^{-5}$), with linear regression close behind at $9.4\times 10^{-5}$ and Elastic Net at $9.7\times 10^{-5}$. The tuned multilayer perceptron (MLP) has a somewhat higher MSE of $1.05\times 10^{-4}$ and MAE of $0.00352$, but attains the highest $R^2$ (0.064), indicating that it captures slightly more explainable variation in YTM changes at the cost of larger squared errors. Overall, the gap in MSE between the tree-based models and the linear/MLP benchmarks is modest but consistent across rolling windows, reinforcing that nonlinear structure matters but that tree ensembles are more effective than this relatively small MLP architecture for our feature set.
 
 \begin{table}[h!]
 \centering
@@ -216,7 +215,11 @@ Stacking Classifier & 0.713615 & 0.720544 & 0.713615 \\
 \end{singlespace}
 
 \section{Conclusion}
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide clear gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, they also offer modest improvements over linear benchmarks. The MLP model achieves worst MSE suggesting we do not need complex neural networks for this problem given the current feature set.
+In this project, we explored a range of linear, tree-based, and neural-network models to forecast corporate bond YTM changes and to classify the sign of those changes. Using a rolling-window evaluation that mimics a realistic investment workflow, we compared models on mean squared error (MSE) for regression and on accuracy, precision, and recall for classification.
+
+Using MSE as the main benchmark for the regression task, the LightGBM-based boosting and stacking regressors consistently deliver the lowest errors, with linear and Elastic Net regressions slightly behind and the MLP performing worst in terms of MSE. The MLP nevertheless attains the highest $R^2$, indicating that it captures somewhat more explainable variation in YTM changes at the expense of higher squared loss. Overall, the improvements in MSE from tree-based models over the linear and MLP baselines are modest but systematic across rolling windows, suggesting that nonlinear interactions matter but can be captured effectively by gradient-boosted trees without resorting to more complex neural architectures.
+
+For the classification task, the boosting and stacking classifiers also outperform logistic and Elastic Net classification in accuracy, precision, and recall, again highlighting the value of tree-based ensembles when combining firm fundamentals, market variables, and macro indicators. Taken together, the results suggest that for this feature set and sample, LightGBM-style tree ensembles offer the best trade-off between predictive accuracy and model complexity for both regression and classification of corporate bond YTM changes.
 
 \appendix
 \section{Appendix}
