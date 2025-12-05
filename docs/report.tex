@@ -144,12 +144,11 @@ Stacking Regressor
 & Ensemble of multiple base models, using a linear regression meta-learner. \\
 Multi-layer Perceptron 
 & Feedforward neural network. \\
+& Multi-layer Perceptron & Feedforward neural network with ReLU hidden layers (Adam, MSE loss). \\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
-
-The MLP is implemented as a small fully connected feed-forward network with ReLU hidden layers and a single linear output, trained with mean squared error loss using the Adam optimizer. In each rolling window, we re-fit the MLP on that window and evaluate it on the next year, using an internal validation split within the training window for early stopping. This setup keeps the MLP directly comparable to the other regression models while controlling training time, which is why we do not include it in the stacked regressor.
 
 \subsubsection{Classification Models}
 For classification task, we implemented and compared the following models:
