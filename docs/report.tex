@@ -149,7 +149,7 @@ Multi-layer Perceptron
 \end{table}
 \end{singlespace}
 
-The MLP is implemented as a small fully connected feed-forward network with ReLU hidden layers and a single linear output, trained with mean squared error loss using the Adam optimizer. In each rolling window, we re-fit the MLP on that window and evaluate it on the next year, using an internal validation split within the training window for early stopping. This setup keeps the MLP directly comparable to the other regression models while controlling training time, which is why we do not include it in the stacked regressor.
+The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time. The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
 \subsubsection{Classification Models}
 For classification task, we implemented and compared the following models:
@@ -178,7 +178,8 @@ For classification models, performance metrics included: Accuracy, Precision, an
 \section{Results and Discussion}
 
 \subsection{Regression Results}
-Across the regression models, tree-based ensembles deliver the strongest performance. The boosting regressor and stacking regressor, both based on LightGBM, achieve the lowest rolling-window MSE (around $8.6$--$8.9\times 10^{-5}$), with linear regression close behind at $9.4\times 10^{-5}$ and Elastic Net at $9.7\times 10^{-5}$. The tuned multilayer perceptron (MLP) has a somewhat higher MSE of $1.05\times 10^{-4}$ and MAE of $0.00352$, but attains the highest $R^2$ (0.064), indicating that it captures slightly more explainable variation in YTM changes at the cost of larger squared errors. Overall, the gap in MSE between the tree-based models and the linear/MLP benchmarks is modest but consistent across rolling windows, reinforcing that nonlinear structure matters but that tree ensembles are more effective than this relatively small MLP architecture for our feature set.
+The Elastic Net Regression model does not significantly outperform the Linear Regression benchmark, indicating that regularization alone provides only limited gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only modest incremental predictability from these nonlinear ensembles.
+The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
 
 \begin{table}[h!]
 \centering
@@ -215,11 +216,7 @@ Stacking Classifier & 0.713615 & 0.720544 & 0.713615 \\
 \end{singlespace}
 
 \section{Conclusion}
-In this project, we explored a range of linear, tree-based, and neural-network models to forecast corporate bond YTM changes and to classify the sign of those changes. Using a rolling-window evaluation that mimics a realistic investment workflow, we compared models on mean squared error (MSE) for regression and on accuracy, precision, and recall for classification.
-
-Using MSE as the main benchmark for the regression task, the LightGBM-based boosting and stacking regressors consistently deliver the lowest errors, with linear and Elastic Net regressions slightly behind and the MLP performing worst in terms of MSE. The MLP nevertheless attains the highest $R^2$, indicating that it captures somewhat more explainable variation in YTM changes at the expense of higher squared loss. Overall, the improvements in MSE from tree-based models over the linear and MLP baselines are modest but systematic across rolling windows, suggesting that nonlinear interactions matter but can be captured effectively by gradient-boosted trees without resorting to more complex neural architectures.
-
-For the classification task, the boosting and stacking classifiers also outperform logistic and Elastic Net classification in accuracy, precision, and recall, again highlighting the value of tree-based ensembles when combining firm fundamentals, market variables, and macro indicators. Taken together, the results suggest that for this feature set and sample, LightGBM-style tree ensembles offer the best trade-off between predictive accuracy and model complexity for both regression and classification of corporate bond YTM changes.
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide clear gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, they also offer modest improvements over linear benchmarks. The MLP model achieves worst MSE suggesting we do not need complex neural networks for this problem given the current feature set.
 
 \appendix
 \section{Appendix}
@@ -237,7 +234,6 @@ For the classification task, the boosting and stacking classifiers also outperfo
 
     \item \textbf{Computation Time For Each Model (Approximate)}
 
-\begin{singlespace}
 \begin{table}[H]
 \centering
 \begin{tabular}{lcc}
@@ -256,38 +252,39 @@ Multilayer Perceptron & 38 minutes 48 seconds \\
 \bottomrule
 \end{tabular}
 \end{table}
-\end{singlespace}
     \item \textbf{AI Tools Used: } We used ChatGPT for drafting and refining report text, and GitHub Copilot for code suggestions and completions.
 \end{enumerate}
 
 \subsection{Predictor List}
 
-\textbf{1. Key Columns}
-
-\begin{singlespace}
-\begin{table}[H]
-\centering
-\begin{tabular}{lp{10cm}}
+\begin{longtable}{l p{10cm}}
+\caption{Comprehensive Description of All Predictors}
+\label{tab:all_predictors_combined} \\
 \toprule
 \textbf{Field Name} & \textbf{Description} \\
 \midrule
-CUSIP & Committee on Uniform Securities Identification Procedures. Unique 9-digit identifier for each bond. \\
-PERMNO & Permanent Number. Unique firm-level identifier from CRSP. \\
-Date & End of Month Date. \\
+\endfirsthead
+
+\multicolumn{2}{c}{\tablename\ \thetable{} -- Continued from previous page} \\
+\toprule
+\textbf{Field Name} & \textbf{Description} \\
+\midrule
+\endhead
+
 \bottomrule
-\end{tabular}
-\end{table}
-\end{singlespace}
+\endfoot
 
-\textbf{2. Bond-level features}
+\bottomrule
+\endlastfoot
 
-\begin{singlespace}
-\begin{table}[H]
-\centering
-\begin{tabular}{l p{10cm}}
-\toprule
-\textbf{Field Name} & \textbf{Description} \\
-\midrule
+\multicolumn{2}{l}{\textbf{A. Key Identifier Columns}} \\
+CUSIP & Committee on Uniform Securities Identification Procedures. Unique 9-digit identifier for each bond. \\
+PERMNO & Permanent Number. Unique firm-level identifier. \\
+Date & End of Month Date. \\
+\addlinespace
+\addlinespace
+
+\multicolumn{2}{l}{\textbf{B. Bond-level Features}} \\
 \texttt{tmt} & The remaining time to maturity of the bond in years. \\
 \texttt{coupon} & The annual coupon rate of the bond. \\
 \texttt{t\_spread} & The weighted average bid-ask spread of the bond which measures liquidity. \\
@@ -295,23 +292,10 @@ Date & End of Month Date. \\
 Credit Ratings & One-hot encoded variables for ratings including \texttt{AAA}, \texttt{AA}, \texttt{A}, \texttt{BBB}, \texttt{BB}, \texttt{B}, \texttt{CCC}, \texttt{CC}, \texttt{C}, and \texttt{D}. \\
 \texttt{upgrade} & Binary variables indicating if the bond was upgraded in the last month. \\
 \texttt{downgrade} & Binary variables indicating if the bond was downgraded in the last month. \\
-\bottomrule
-\end{tabular}
-\end{table}
-\end{singlespace}
+\addlinespace
+\addlinespace
 
-\textbf{3. Firm-level features}
-
-\begin{singlespace}
-\begin{table}[H]
-\centering
-\caption{Description of Firm-level Features}
-\label{tab:firm_features}
-\begin{tabular}{l p{10cm}}
-\toprule
-\textbf{Field Name} & \textbf{Description} \\
-\midrule
-\multicolumn{2}{l}{\textit{\textbf{Stock Market Features}}} \\
+\multicolumn{2}{l}{\textbf{C. Firm-level Features: Stock Market}} \\
 \texttt{ret} & Monthly stock return accumulated from daily returns. \\
 \texttt{vol} & Monthly return volatility, calculated as the standard deviation of daily log returns. \\
 \texttt{dvol} & Dollar trading volume, calculated as price multiplied by shares traded. \\
@@ -321,8 +305,9 @@ Credit Ratings & One-hot encoded variables for ratings including \texttt{AAA}, \
 \texttt{mktcap} & Month-end market capitalization (Price $\times$ Shares Outstanding). \\
 \texttt{price\_mean} & The average daily closing stock price over the month. \\
 \addlinespace
+\addlinespace
 
-\multicolumn{2}{l}{\textit{\textbf{Accounting-Based Derived Indicators}}} \\
+\multicolumn{2}{l}{\textbf{D. Firm-level Features: Accounting-Based Derived Indicators}} \\
 \texttt{log\_atq} & Natural logarithm of total assets, used as a proxy for firm size. \\
 \texttt{lev\_total} & Total leverage ratio, calculated as total liabilities divided by total assets. \\
 \texttt{equity\_ratio} & Equity-to-assets ratio, calculated as total common equity divided by total assets. \\
@@ -332,64 +317,29 @@ Credit Ratings & One-hot encoded variables for ratings including \texttt{AAA}, \
 \texttt{mkt\_cap} & Accounting-based market capitalization. \\
 \texttt{market\_to\_book} & Market-to-book ratio, calculated as market capitalization divided by book equity. \\
 \addlinespace
+\addlinespace
 
-\multicolumn{2}{l}{\textit{\textbf{Growth Indicators (QoQ)}}} \\
+\multicolumn{2}{l}{\textbf{E. Firm-level Features: Growth Indicators (Quarter-over-Quarter)}} \\
 \texttt{atq\_growth} & Quarter-over-quarter growth rate of total assets. \\
 \texttt{revtq\_growth} & Quarter-over-quarter growth rate of total revenue. \\
 \texttt{niq\_growth} & Quarter-over-quarter growth rate of net income. \\
-\bottomrule
-\end{tabular}
-\end{table}
-\end{singlespace}
+\addlinespace
+\addlinespace
 
-\textbf{4. Macroeconomic features}
-
-\begin{table}[H]
-\centering
-\caption{Description of Macroeconomic Features}
-\label{tab:macroeconomic_features}
-\begin{tabular}{l p{10cm}}
-\toprule
-\textbf{Field Name} & \textbf{Description} \\
-\midrule
-\texttt{sp500} &
-Monthly level of the S\&P 500 index, capturing overall equity market conditions and risk appetite. \\[0.5em]
-
-\texttt{ir3m} &
-Monthly average 3-month Treasury yield, representing short-term risk-free rates and monetary policy stance. \\[0.5em]
-
-\texttt{ir10y} &
-Monthly average 10-year Treasury yield, reflecting long-term discount rates relevant for bond valuation. \\[0.5em]
-
-\texttt{vix} &
-Monthly average VIX index, measuring market-implied volatility and broad risk aversion. \\[0.5em]
-
-\texttt{gdp} &
-Real GDP level or growth, aligned to each month, summarizing aggregate economic activity. \\[0.5em]
-
-\texttt{cpi} &
-Consumer Price Index (level or change), measuring inflation conditions relevant for nominal yields and real required returns. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{5. Industry features}
-
-\begin{singlespace}
-\begin{table}[H]
-\centering
-\caption{Description of Industry Features}
-\label{tab:industry_features}
-\begin{tabular}{l p{10cm}}
-\toprule
-\textbf{Field Name} & \textbf{Description} \\
-\midrule
+\multicolumn{2}{l}{\textbf{F. Industry Features}} \\
 \texttt{price} & The monthly closing price of the sector ETF corresponding to the firm's Global Industry Classification Standard (GICS) sector. \\
 \texttt{return} & The monthly return of the sector ETF, used as a proxy for sector-specific market performance and shocks. \\
-\bottomrule
-\end{tabular}
-\end{table}
-\end{singlespace}
+\addlinespace
+\addlinespace
+
+\multicolumn{2}{l}{\textbf{G. Macroeconomic Features}} \\
+\texttt{sp500} & Monthly level of the S\&P 500 index, capturing overall equity market conditions and risk appetite. \\
+\texttt{ir3m} & Monthly average 3-month Treasury yield, representing short-term risk-free rates and monetary policy stance. \\
+\texttt{ir10y} & Monthly average 10-year Treasury yield, reflecting long-term discount rates relevant for bond valuation. \\
+\texttt{vix} & Monthly average VIX index, measuring market-implied volatility and broad risk aversion. \\
+\texttt{gdp} & Real GDP level or growth, aligned to each month, summarizing aggregate economic activity. \\
+\texttt{cpi} & Consumer Price Index (level or change), measuring inflation conditions relevant for nominal yields and real required returns. \\
+\end{longtable}
 
 
 \end{document}
