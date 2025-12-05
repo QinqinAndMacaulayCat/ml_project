@@ -10,13 +10,12 @@
 \usepackage{float}                % For table positioning
 \usepackage{hyperref}             % For hyperlinks
 \usepackage{longtable}            % For tables that might break pages
-\usepackage{indentfirst}          % Indent first paragraph of sections
 \usepackage[utf8]{inputenc}
 
 % --- Document Setup ---
 \doublespacing % Double spacing for the main body
 
-\title{\textbf{Predicting Corporate Bond YTM Changes}}
+\title{\textbf{Predicting Corporate Bond YTM Changes Using Machine Learning}}
 \author{Team members: Yuxi Geng, Yutung Lin, Qinqin Huang}
 \date{}
 
@@ -27,22 +26,29 @@
 \section{Objective}
 
 The objective of this project is to predict corporate bond yield to maturity (YTM) changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators.
+
 By applying various machine learning regression models such as ElasticNet, Boosting, and Multi-layer Perceptron, we aim to improve prediction accuracy compared to traditional linear regression models.
+
 In addition, we used the change direction of YTM movements as a classification target since there are many outliers in the YTM change values that may affect regression model performance. We applied classification models such as Logistic Regression, ElasticNet Classifier, and Boosting Classifier to predict the direction of YTM changes.
 
 \section{Methodology}
 
 \subsection{Data Description}
+
 We utilized data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequency is monthly, and the data range is from July 2002 to February 2025.
+
 We have a total of 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the predictors are listed in the appendix.
 
 The target variable is the corporate bond yield to maturity (YTM) change, defined as the difference in YTM over a one-month horizon:
+
 \begin{equation}
 \Delta \text{YTM}_i = \text{YTM}_{i,t} - \text{YTM}_{i,t-1}
 \end{equation}
+
 where $\text{YTM}_{i,t}$ is the yield to maturity of bond $i$ at the end of month $t$.
 
 For classification, the target variable is defined as:
+
 \begin{equation}
 \text{YTM\_Direction}_i = 
 \begin{cases}
@@ -54,7 +60,10 @@ For classification, the target variable is defined as:
 
 The total number of observations after merging all datasets is approximately 854,769, covering 12,117 unique bonds over the sample period.
 
-The data descriptive statistics of the yield to maturity (YTM) changes and class distribution are as follows:
+The data descriptive statistics of the yield to maturity (YTM) changes are as follows:
+
+% Single spacing for tables/verbatim to keep them readable
+
 
 \begin{table}[H]
 \centering
@@ -73,8 +82,10 @@ The data descriptive statistics of the yield to maturity (YTM) changes and class
 0.97903 \\
 \hline
 \end{tabular}
-\caption{Descriptive statistics}
+\caption{Descriptive statistics (transposed to one row).}
 \end{table}
+
+The number of observations for each YTM change direction category is as follows: 
 
 \begin{table}[H]
 \centering
@@ -85,83 +96,82 @@ The data descriptive statistics of the yield to maturity (YTM) changes and class
 \textbf{Count} & 435398 & 399205 & 20166 \\
 \hline
 \end{tabular}
-\caption{Class distribution}
+\caption{Class distribution (transposed).}
 \end{table}
 
 \subsection{Feature Construction}
-After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. 
+
+After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
 
 \begin{enumerate}
     \item \textbf{Merging Procedure}
-    We combine the datasets using index columns: CUSIP (bond identifier), PERMNO (firm identifier), and Date (end-of-month date).
+    We combine the datasets using index columns: \texttt{CUSIP} (bond identifier) and \texttt{Date} (end-of-month date).
 
-    \item \textbf{Missing-Value Handling: }
-    Missing values are handled based on variable type:
+    \item \textbf{Missing-Value Handling}
+    After merging, missing values are handled according to variable type:
     \begin{itemize}
-        \item \textbf{Categorical Variables:} We use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month. For example: credit rating dummies (AAA\dots D), rating transition indicators, and Compustat data-status flag (costat). 
-        \item \textbf{Numeric Variables:} We also use cross-sectionally monthly median to impute missing values for numeric variables, the remaining NaNs are set to be zero.
+        \item \textbf{Categorical Variables:} Credit rating dummies (AAA\dots D), Rating transition indicators, and Compustat data-status flag (costat). Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+        \item \textbf{Numeric Variables:} We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
     \end{itemize}
 
     \item \textbf{Normalization}
-    We apply two layers of normalization.
-    First, all bond-level and firm-level variables are rank-normalized within each month. The variables are mapped to [-1, 1] using:
+    \begin{itemize}
+        \item \textbf{Rank-Normalized Features:} Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors. Each month, variables are transformed using:
         \begin{equation}
         \text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1
         \end{equation}
-        where \text{rank} is the cross-sectional rank of the variable for that month, and $N$ is the total number of non-missing observations that month. 
-        Features in this category include stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors. 
-        For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to $-1$.
-
-    Second, macroeconomic variables are normalized using z-score normalization based on training set statistics in each rolling window to avoid data leakage as well as keep their time-series properties. 
-        \begin{equation}
-        \text{normalized\_value} = \frac{\text{value} - \mu_{\text{train}}}{\sigma_{\text{train}}}
-        \end{equation}
-        where $\mu_{\text{train}}$ and $\sigma_{\text{train}}$ are the mean and standard deviation of the macro variable computed from the training set only.
+        producing values in $[-1, 1]$. For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to $-1$.
+        
+        \item \textbf{Not Normalized (kept in raw form):} Includes macroeconomic indicators and yield-curve variables (e.g., \texttt{sp500\_ret}, \texttt{gdp\_gr}, \texttt{cpi\_infl}, \texttt{ir3m\_chg}, \texttt{ir10y\_chg}, \texttt{vix\_chg}, \texttt{s3m}, \texttt{term\_spread}). These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
+    \end{itemize}
 \end{enumerate}
 
 \subsection{Data Splitting}
+
 We used a rolling window forecasting approach. At each year, we used a time-series split to create training, validation, and test sets. The training set consisted of 10 years of data, the validation set and test set each consisted of 1 year of data. At each year, we tuned hyperparameters based on training set and validation set, then forecast target variables in the test set.
+
 When tuning is not involved or cross-validation is adopted, the validation set was combined with the training set to train the final model. For example, to predict YTM changes in 2013, we used data from 2002 to 2011 as the training set, data in 2012 as the validation set, and data in 2013 as the test set. 
 
 \subsection{Modeling Framework}
+
 \subsubsection{Regression Models}
+
 We implemented and compared the following machine learning models for the regression task:
+
 \begin{singlespace}
 \begin{table}[H]
 \centering
-\begin{tabular}{p{4cm} p{9.5cm}}
+\begin{tabular}{ll}
 \toprule
 \textbf{Model} & \textbf{Description} \\
 \midrule
-Linear Regression 
-& Baseline model used for comparison. \\
-ElasticNet Regression
-& Combination of L1 and L2 regularization, with hyperparameters 
-$\alpha$ and $l1\_ratio$ tuned via 10-fold cross-validation. \\
-Boosting Regressor (LightGBM) 
-& Gradient boosting model built from ensembles of weak learners with early stopping. Hyperparameters such as num\_leaves and learning\_rate are tuned using grid search. \\
-Stacking Regressor 
-& Ensemble of multiple base models, using a linear regression meta-learner. \\
-Multi-layer Perceptron 
-& Feedforward neural network. \\
+Linear Regression & Baseline linear model \\
+ElasticNet & Combination of L1 and L2 regularization. We tuned alpha and l1\_ratio hyperparameters using 10-fold cross-validation. \\
+Boosting Regressor(LightGBM) & Ensemble of weak learners \\
+Stacking Regressor & Ensemble of multiple models using linear regression as meta-model \\
+Multi-layer Perceptron & Feedforward neural network \\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
 
-The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time. The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
+
+For the Multilayer Perceptron (MLP), we use the same rank-normalized predictors as in the other regression models (bond-level, firm-level, and sector-level features), together with the raw macro variables. The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time. The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
+
+Notice that in each load, we normalized the macroeconomic variables based on the training set statistics. That's because these variables are identical across all firms in a given month, normalizing them using the entire dataset would lead to data leakage and normalizing them monthly would collapse them into constants, eliminating their informational content.
 
 \subsubsection{Classification Models}
+
 For classification task, we implemented and compared the following models:
 
 \begin{singlespace}
 \begin{table}[H]
 \centering
-\begin{tabular}{p{4cm} p{9.5cm}}
+\begin{tabular}{ll}
 \toprule
 \textbf{Model} & \textbf{Description} \\
 \midrule
-Logistic Regression & Baseline model used for comparison. \\
+Logistic Regression & Linear classification model \\
 ElasticNet Classifier & Combination of L1 and L2 regularization. We tuned alpha and l1\_ratio hyperparameters using 10-fold cross-validation. \\
 Boosting Classifier (LightGBM) & Ensemble of weak learners. We tuned num\_leaves and learning\_rate hyperparameters using grid search. \\
 Stacking Classifier & Ensemble of multiple models using logistic regression as meta-model \\
@@ -170,16 +180,21 @@ Stacking Classifier & Ensemble of multiple models using logistic regression as m
 \end{table}
 \end{singlespace}
 
+
 \subsection{Model Evaluation}
+
 We used a rolling window evaluation approach and calculated performance metrics on the test set for each year from 2012 to 2024. Then, the metrics were averaged to assess overall model performance.
+
 For regression models, performance metrics included: MSE, MAE, MedAE, and $R^2$
+
 For classification models, performance metrics included: Accuracy, Precision, and Recall
+
 
 \section{Results and Discussion}
 
 \subsection{Regression Results}
-The Elastic Net Regression model does not significantly outperform the Linear Regression benchmark, indicating that regularization alone provides only limited gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only modest incremental predictability from these nonlinear ensembles.
-The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
+
+The table below summarizes the performance of different regression models on the test set:
 
 \begin{table}[h!]
 \centering
@@ -187,17 +202,23 @@ The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample
 \hline
 Model & MSE & MAE & MedAE & $R^2$ \\
 \hline
-Linear Regression  & 0.000094 & 0.003226 & 0.002065 &  0.001753 \\
-ElasticNet Regression       & 0.000097 & 0.003107 & 0.001900 & -0.019272 \\
-Boosting Regressor     & 0.000089 & 0.003069 & 0.001620 & -0.109083 \\
-Stacking Regressor & 0.000086 & 0.002959 & 0.001591 & -0.008823 \\
+ElasticNet        & 0.000097 & 0.003107 & 0.001900 & -0.019272 \\
+LGBMRegressor     & 0.000089 & 0.003069 & 0.001620 & -0.109083 \\
+LinearRegression  & 0.000094 & 0.003226 & 0.002065 &  0.001753 \\
+StackingRegressor & 0.000086 & 0.002959 & 0.001591 & -0.008823 \\
 Multilayer Perceptron & 0.000105 & 0.003522 & 0.002168 & 0.064329 \\
 \hline
 \end{tabular}
 \end{table}
 
+
+The Elastic Net Regression model does not significantly outperform the Linear Regression benchmark, indicating that regularization alone provides only limited gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only modest incremental predictability from these nonlinear ensembles.
+
+The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
+
 \subsection{Classification Results}
-In classification tasks, the Boosting Classifier (LightGBM) and Stacking Classifier outperformed the logistic models.
+
+The table below summarizes the performance of classification models on the test set:
 
 \begin{singlespace}
 \begin{table}[H]
@@ -206,18 +227,22 @@ In classification tasks, the Boosting Classifier (LightGBM) and Stacking Classif
 \toprule
 \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} \\
 \midrule
-Logistic Regression & 0.687858 & 0.687190 & 0.687858 \\
-ElasticNet Classifier & 0.687915 & 0.686969 & 0.687915 \\
+Elastic Net Classifier & 0.687915 & 0.686969 & 0.687915 \\
 Boosting Classifier (LightGBM) & 0.713470 & 0.719949 & 0.713470 \\
+Logistic Regression & 0.687858 & 0.687190 & 0.687858 \\
 Stacking Classifier & 0.713615 & 0.720544 & 0.713615 \\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
 
-\section{Conclusion}
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide clear gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, they also offer modest improvements over linear benchmarks. The MLP model achieves worst MSE suggesting we do not need complex neural networks for this problem given the current feature set.
+In classification tasks, the Boosting Classifier (LightGBM) and Stacking Classifier outperformed the logistic models.
 
+\section{Conclusion}
+
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide clear gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, however, even flexible nonlinear models such as LightGBM, model stacking, and the tuned MLP deliver only modest improvements in MSE and at best a relatively small positive out-of-sample $R^2$ (for the tuned MLP), while the other nonlinear models obtain $R^2$ values that are close to zero or slightly negative compared with a simple linear benchmark.
+
+\newpage
 \appendix
 \section{Appendix}
 
@@ -229,33 +254,38 @@ In this project, we explored various machine learning models to predict corporat
         \item CPU: MacBook Pro (Apple M4 Pro)
         \item Programming Language: Python 3.13
         \item Libraries: pandas, numpy, scikit-learn, lightgbm, tensorflow/keras
-        \item \href{https://github.com/QinqinAndMacaulayCat/ml_project}{Code Repository (GitHub)}
+        \item Code Repository: Github \url{https://github.com/QinqinAndMacaulayCat/ml_project/tree/main}
     \end{itemize}
 
     \item \textbf{Computation Time For Each Model (Approximate)}
+\end{enumerate}
 
 \begin{singlespace}
 \begin{table}[H]
 \centering
 \begin{tabular}{lcc}
 \toprule
-\textbf{Model} & \textbf{Training/Prediction} \\
+\textbf{Model} & \textbf{Tuning} & \textbf{Training/Prediction} \\
 \midrule
-Linear Regression & 3.7 seconds \\
-Elastic Net Regression & 9.2 seconds \\
-Boosting Regressor & 2 minutes 15 seconds \\
-Stacking Regressor & 4 minutes 50 seconds \\
-Logistic Regression & 57 seconds \\
-Elastic Net Classification & 635 minutess \\
-Boosting Classifier & 10 minutes \\
-Stacking Classifier & 19 minutes 7.4 seconds \\
-Multilayer Perceptron & 38 minutes 48 seconds \\
+Linear Regression & - & 3.9 seconds \\
+Elastic Net Regression & - & 1 min 10 sec \\
+LGBM Regressor & 31 min 41.4 sec & 58.3 seconds \\
+Stacked Regressor & - & 6 min 50 sec \\
+Logistic Regression & - & 1 min 30 sec \\
+Elastic Net Classification & 83 min 59.8 sec & 23 min 40.7 sec \\
+Boosting Classifier & 114 min 48.8 sec & 1 min 27.9 sec \\
+Stacked Classifier & - & 107 min 11.9 sec \\
+Multilayer Perceptron & 38 min 48 seconds & 3 min 16 sec \\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
-    \item \textbf{AI Tools Used: } We used ChatGPT for drafting and refining report text, and GitHub Copilot for code suggestions and completions.
-\end{enumerate}
+
+    \item \textbf{AI Tools Used}
+    \begin{itemize}
+        \item ChatGPT for drafting and refining report text
+        \item GitHub Copilot for code suggestions and completions
+    \end{itemize}
 
 \subsection{B.1 Predictor List}
 
@@ -285,15 +315,44 @@ Date & End of Month Date. \\
 \toprule
 \textbf{Field Name} & \textbf{Description} \\
 \midrule
-\texttt{tmt} & The remaining time to maturity of the bond in years. \\
-\texttt{coupon} & The annual coupon rate of the bond. \\
+Time to Maturity (\texttt{tmt}) & The remaining time to maturity of the bond in years. \\
+Coupon Rate (\texttt{coupon}) & The annual coupon rate of the bond. \\
 \texttt{t\_spread} & The weighted average bid-ask spread of the bond which measures liquidity. \\
 \texttt{return\_eom} & Bond return of last month. \\
 Credit Ratings & One-hot encoded variables for ratings from AAA to D. \\
-\texttt{upgrade} & Binary variables indicating if the bond was upgraded in the last month. \\
-\texttt{downgrade} & Binary variables indicating if the bond was downgraded in the last month. \\
+Rating Change Indicators & Binary variables (\texttt{upgrade}, \texttt{downgrade}). \\
 \bottomrule
 \end{tabular}
+\end{table}
+\end{singlespace}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Variable} & \textbf{Count} & \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{25\%} & \textbf{50\%} & \textbf{75\%} & \textbf{Max} \\
+\midrule
+\texttt{tmt} & 3.56e+6 & 6.35 & 8.67 & 0.00 & 1.61 & 3.54 & 6.89 & 102.13 \\
+\texttt{coupon} & 3.56e+6 & 0.03 & 0.03 & 0.00 & 0.00 & 0.03 & 0.06 & 0.34 \\
+\texttt{t\_spread} & 1.79e+6 & 0.01 & 0.01 & 0.00 & 0.00 & 0.00 & 0.01 & 2.00 \\
+\texttt{yield} & 3.39e+6 & 0.01 & 0.13 & -1.00 & 0.00 & 0.03 & 0.05 & 1.00 \\
+\texttt{ret\_eom} & 3.42e+6 & 0.01 & 1.18 & -1.00 & 0.00 & 0.00 & 0.01 & 2090.0 \\
+\texttt{rating\_A} & 3.42e+6 & 0.20 & 0.40 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_AA} & 3.42e+6 & 0.04 & 0.21 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_AAA} & 3.42e+6 & 0.01 & 0.09 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_B} & 3.42e+6 & 0.03 & 0.16 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_BB} & 3.42e+6 & 0.04 & 0.20 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_BBB} & 3.42e+6 & 0.23 & 0.42 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_C} & 3.42e+6 & 0.00 & 0.02 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_CC} & 3.42e+6 & 0.00 & 0.03 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_CCC} & 3.42e+6 & 0.01 & 0.09 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{rating\_D} & 3.42e+6 & 0.00 & 0.02 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{upgrade} & 3.42e+6 & 0.00 & 0.04 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\texttt{downgrade} & 3.42e+6 & 0.00 & 0.05 & 0.00 & 0.00 & 0.00 & 0.00 & 1.00 \\
+\bottomrule
+\end{tabular}}
 \end{table}
 \end{singlespace}
 
@@ -341,6 +400,39 @@ We incorporate firm-level information from both daily stock data (CRSP) and quar
 \end{table}
 \end{singlespace}
 
+\begin{singlespace}
+\begin{table}[H]
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Variable} & \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{25\%} & \textbf{50\%} & \textbf{75\%} & \textbf{Max} \\
+\midrule
+\texttt{stock\_ret} & 0.00081 & 0.1162 & -0.3446 & -0.052 & 0.00206 & 0.05164 & 0.3881 \\
+\texttt{stock\_vol} & 0.02420 & 0.01729 & 0 & 0.01106 & 0.01978 & 0.03373 & 0.07639 \\
+\texttt{dvol} & 4.720e8 & 1.338e9 & 0 & 3.564e6 & 2.814e7 & 2.269e8 & 9.083e9 \\
+\texttt{price\_mean} & 27.89 & 33.39 & 0.4247 & 7.503 & 17.41 & 34.67 & 202.7 \\
+\texttt{turnover} & 10.55 & 20.04 & 0.1046 & 2.171 & 5.032 & 10.39 & 151.0 \\
+\texttt{bidask} & 0.03700 & 0.03154 & 0.00136 & 0.01481 & 0.02762 & 0.04922 & 0.1571 \\
+\texttt{numtrades} & 2.353e4 & 7.754e4 & 0 & 0 & 0 & 5060 & 5.375e5 \\
+\texttt{stock\_mktcap} & 2.558e6 & 7.306e6 & 2612 & 6.575e4 & 2.860e5 & 1.336e6 & 5.040e7 \\
+\texttt{log\_atq} & 5.966 & 2.271 & 1.059 & 4.265 & 5.935 & 7.575 & 11.88 \\
+\texttt{lev\_total} & 0.5453 & 0.2667 & 0.04291 & 0.3332 & 0.5433 & 0.7454 & 1.437 \\
+\texttt{equity\_ratio} & 0.4682 & 0.2518 & 0.03758 & 0.2655 & 0.4584 & 0.6722 & 0.9650 \\
+\texttt{roa} & -0.011 & 0.06202 & -0.4176 & -0.001 & 0.00419 & 0.01634 & 0.1046 \\
+\texttt{profit\_margin} & -0.067 & 0.5065 & -4.911 & -0.032 & 0.03624 & 0.09573 & 0.8525 \\
+\texttt{int\_coverage} & 7.883 & 10.21 & -9.713 & 2.324 & 4.903 & 9.881 & 78.47 \\
+\texttt{mkt\_cap} & 3631 & 2.366e4 & 0.0150 & 55.60 & 249.9 & 1257 & 4.330e6 \\
+\texttt{m2b} & 2.865 & 3.123 & 0.2618 & 1.144 & 1.846 & 3.275 & 26.64 \\
+\texttt{atq\_growth} & 0.0306 & 0.2174 & -1.000 & -0.023 & 0.00585 & 0.04315 & 4.966 \\
+\texttt{revtq\_growth} & 0.0594 & 0.3745 & -1.000 & -0.058 & 0.01596 & 0.1119 & 5.000 \\
+\texttt{niq\_growth} & -0.111 & 1.158 & -5.000 & -0.538 & -0.033 & 0.2378 & 5.000 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+\end{singlespace}
+
 \textbf{4. Macroeconomic features}
 
 \begin{singlespace}
@@ -384,6 +476,25 @@ We incorporate firm-level information from both daily stock data (CRSP) and quar
 \end{singlespace}
 
 
+\begin{singlespace}
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Variable} & \textbf{Count} & \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{25\%} & \textbf{50\%} & \textbf{75\%} & \textbf{Max} \\
+\midrule
+SP500 & 335 & 2185.71 & 1418.34 & 735.09 & 1191.41 & 1454.60 & 2772.33 & 6840.20 \\
+IR3M & 335 & 2.07 & 2.00 & 0.00 & 0.12 & 1.51 & 4.21 & 6.15 \\
+IR10Y & 335 & 3.44 & 1.37 & 0.54 & 2.30 & 3.53 & 4.49 & 6.67 \\
+VIX & 335 & 20.29 & 7.82 & 9.51 & 14.45 & 18.43 & 24.44 & 59.89 \\
+GDP & 328 & 17764.9 & 2911.2 & 12703.7 & 15670.8 & 17035.1 & 20070.6 & 23770.9 \\
+CPI & 333 & 227.69 & 42.89 & 162.00 & 191.70 & 227.17 & 252.56 & 324.37 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{singlespace}
+
 \textbf{5. Industry features}
 
 \begin{singlespace}
@@ -401,6 +512,22 @@ We incorporate firm-level information from both daily stock data (CRSP) and quar
 \end{tabular}
 \end{table}
 \end{singlespace}
+
+\begin{singlespace}
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Variable} & \textbf{Count} & \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{25\%} & \textbf{50\%} & \textbf{75\%} & \textbf{Max} \\
+\midrule
+Price & 3128 & 44.03 & 39.40 & 4.57 & 18.23 & 29.43 & 54.97 & 300.68 \\
+Return & 3117 & 0.008 & 0.055 & -0.3437 & -0.0217 & 0.0110 & 0.0390 & 0.3076 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{singlespace}
+
 
 
 \end{document}
