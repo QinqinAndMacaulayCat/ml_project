@@ -144,12 +144,11 @@ Stacking Regressor
 & Ensemble of multiple base models, using a linear regression meta-learner. \\
 Multi-layer Perceptron 
 & Feedforward neural network. \\
+& Multi-layer Perceptron & Feedforward neural network with ReLU hidden layers (Adam, MSE loss). \\
 \bottomrule
 \end{tabular}
 \end{table}
 \end{singlespace}
-
-The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time. The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
 \subsubsection{Classification Models}
 For classification task, we implemented and compared the following models:
