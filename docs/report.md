@@ -68,7 +68,6 @@ neutral     20166
 ### 2.2 Feature Construction
 
 After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
-
 1. Merging Procedure  
 
     We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
@@ -94,13 +93,13 @@ After preparing the bond-level, firm-level, sector-level, and macroeconomic data
 
 3. Normalization
 
-    (1) Rank-Normalized Features
+   ` (1) Rank-Normalized Features
 
     - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
     - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
     - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
 
-
+`
     (2) Not Normalized (kept in raw form) includes macroeconomic indicators and yield-curve variables:
 
     -  sp500_ret, gdp_gr, cpi_infl
@@ -135,7 +134,9 @@ Here, for the ElasticNet model, we tuned the hyperparameters alpha and l1_ratio 
 
 We also implemented a Stacked Regressor that combines predictions from Linear Regression, ElasticNet, and LightGBM models using linear regression as the meta-model to improve overall performance.
 
-For the Multilayer Perceptron (MLP), we use the same rank-normalized predictors as in the other regression models (bond-level, firm-level, and sector-level features), together with the raw macro variables. The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. For each rolling window, we re-estimate the MLP on the corresponding training period and evaluate it on the test year, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time.
+For the Multilayer Perceptron (MLP), we use the same rank-normalized predictors as in the other regression models (bond-level, firm-level, and sector-level features), together with the raw macro variables. The MLP is implemented as a small fully connected feed-forward network with ReLU activation functions and a single linear output node, trained with mean squared error loss and the Adam optimizer. 
+
+Before the final evaluation, we conduct a grid search over the number of hidden layers, the number of units per layer, the learning rate, and the batch size using a 10-year training window and a 1-year validation window within each rolling block. The configuration that maximizes the average validation $R^2$ across all windows is selected as the tuned MLP. For the final rolling experiment, we fix this tuned architecture and, for each window, re-estimate the MLP on the combined 10-year training + 1-year validation period and evaluate it on the 1-year test period, using an internal hold-out split within the training window for early stopping. Thus, the MLP is directly comparable to the other regression models in terms of the rolling-window evaluation design, although it is considerably more computationally intensive and we keep the network architecture relatively small to control training time.
 
 The MLP is not part of the stacked regressor due to its separate training procedure and high computational cost.
 
@@ -186,11 +187,11 @@ The table below summarizes the performance of different regression models on the
 | LGBMRegressor      | 0.000089     | 0.003069   | 0.001620  | -0.109083   |
 | LinearRegression   | 0.000094     | 0.003226   | 0.002065  | 0.001753    |
 | StackingRegressor  | 0.000086     | 0.002959   | 0.001591  | -0.008823   |
-| Multilayer Perceptron  | 0.000103  | 0.003265 | 0.001792 | 0.232484 |
+| Multilayer Perceptron  | 0.000105  | 0.003522 | 0.002168 | 0.064329 |
 
-The Elastic Net Regression model did not significantly outperform the Linear Regression model, indicating that regularization may not provide substantial benefits in this context. The LGBM Regressor achieved the lowest MSE and highest R^2, suggesting that ensemble methods can better capture complex relationships in the data. The Stacked Regressor also performed well, leveraging the strengths of multiple models but did not surpass the LGBM Regressor.
+The Elastic Net Regression model does not significantly outperform the Linear Regression model, indicating that regularization alone does not provide substantial gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure Linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only limited incremental predictability from these nonlinear ensembles.
 
-The multilayer perceptron (MLP) underperforms all other models in the rolling experiment, with noticeably higher MSE/MAE and only a modest $R^2 \approx 0.014$. This suggests that, given our current feature set and simple network architecture, a feed-forward neural network does not extract additional predictive structure beyond what linear models and tree-based ensembles already capture, and may even be more prone to fitting noise.
+The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
 
 
 ### 3.2 Classification Results
@@ -210,7 +211,7 @@ In classification tasks, both the Elastic Net Classifier and Logistic Regression
 
 ## 4. Conclusion
 
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. However, the improvement was modest, suggesting that further enhancements such as more accurate data, additional features, or alternative modeling approaches may be necessary to achieve substantial gains in predictive accuracy. textual disclosures, market microstructure signals), or alternative modeling frameworks that more directly account for regime shifts and rare credit events.
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide noticeable gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, however, even flexible nonlinear models such as LightGBM, model stacking, and the tuned MLP deliver only modest improvements in MSE and relatively small positive out-of-sample $R^2$ compared with a simple linear benchmark.
 
 
 ## Appendix: 
