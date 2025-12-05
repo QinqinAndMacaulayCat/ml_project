@@ -196,26 +196,25 @@ For classification models, performance metrics included: Accuracy, Precision, an
 
 The table below summarizes the performance of different regression models on the test set:
 
-\begin{singlespace}
-\begin{table}[H]
+\begin{table}[h!]
 \centering
 \begin{tabular}{lcccc}
-\toprule
-\textbf{Model} & \textbf{MSE} & \textbf{MAE} & \textbf{MedAE} & $\mathbf{R^2}$ \\
-\midrule
-ElasticNet & 0.000097 & 0.003107 & 0.001900 & -0.019272 \\
-Boosting Regressor(LightGBM) & 0.000089 & 0.003069 & 0.001620 & -0.109083 \\
-Linear Regression & 0.000094 & 0.003226 & 0.002065 & 0.001753 \\
-Stacking Regressor & 0.000086 & 0.002959 & 0.001591 & -0.008823 \\
-Multilayer Perceptron & 0.000103 & 0.003265 & 0.001792 & 0.232484 \\
-\bottomrule
+\hline
+Model & MSE & MAE & MedAE & $R^2$ \\
+\hline
+ElasticNet        & 0.000097 & 0.003107 & 0.001900 & -0.019272 \\
+LGBMRegressor     & 0.000089 & 0.003069 & 0.001620 & -0.109083 \\
+LinearRegression  & 0.000094 & 0.003226 & 0.002065 &  0.001753 \\
+StackingRegressor & 0.000086 & 0.002959 & 0.001591 & -0.008823 \\
+Multilayer Perceptron & 0.000105 & 0.003522 & 0.002168 & 0.064329 \\
+\hline
 \end{tabular}
 \end{table}
-\end{singlespace}
 
-The Elastic Net Regression model did not significantly outperform the Linear Regression model. The Boosting Regressor (LightGBM) and the Stacking Regressor showed improved performance over linear models, with lower MSE and MAE values. 
 
-The multilayer perceptron (MLP) underperforms all other models in the rolling experiment, with noticeably higher MSE/MAE. This suggests that, given our current feature set and simple network architecture, a feed-forward neural network does not extract additional predictive structure beyond what linear models and tree-based ensembles already capture, and may even be more prone to fitting noise.
+The Elastic Net Regression model does not significantly outperform the Linear Regression benchmark, indicating that regularization alone provides only limited gains in this setting. The LGBM Regressor and the Stacking Regressor achieve slightly lower MSE than the pure linear model, but their average out-of-sample $R^2$ remains close to zero (and sometimes slightly negative), suggesting only modest incremental predictability from these nonlinear ensembles.
+
+The tuned multilayer perceptron (MLP) achieves the highest average out-of-sample $R^2 \approx 0.064$ across the rolling windows, indicating that the nonlinear network is able to capture some additional time-series variation in YTM changes. However, this comes at the cost of slightly higher MSE/MAE compared with the best tree-based and stacked models, and the overall magnitude of the $R^2$ remains modest. This suggests that, given our current feature set and network size, a feed-forward neural network provides only limited improvement in predictive accuracy over simpler linear and ensemble benchmarks.
 
 \subsection{Classification Results}
 
@@ -241,7 +240,7 @@ In classification tasks, the Boosting Classifier (LightGBM) and Stacking Classif
 
 \section{Conclusion}
 
-In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM outperform traditional linear models in both regression and classification tasks. Regularization techniques such as ElasticNet did not yield significant improvements over linear models in this context. Stacking models didn't provide substantial gains over the best individual models.
+In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. In this project, we explored various machine learning models to predict corporate bond yield to maturity changes using firm-level fundamentals, market-based risk factors, and macroeconomic indicators. Our findings indicate that ensemble methods like LightGBM provide clear gains in the classification task, where they outperform traditional linear models in terms of accuracy, precision, and recall. For the regression task, however, even flexible nonlinear models such as LightGBM, model stacking, and the tuned MLP deliver only modest improvements in MSE and at best a relatively small positive out-of-sample $R^2$ (for the tuned MLP), while the other nonlinear models obtain $R^2$ values that are close to zero or slightly negative compared with a simple linear benchmark.
 
 \newpage
 \appendix
@@ -276,7 +275,7 @@ Logistic Regression & - & 1 min 30 sec \\
 Elastic Net Classification & 83 min 59.8 sec & 23 min 40.7 sec \\
 Boosting Classifier & 114 min 48.8 sec & 1 min 27.9 sec \\
 Stacked Classifier & - & 107 min 11.9 sec \\
-Multilayer Perceptron & - & 3 min 16 sec \\
+Multilayer Perceptron & 38 min 48 seconds & 3 min 16 sec \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -529,7 +528,7 @@ Return & 3117 & 0.008 & 0.055 & -0.3437 & -0.0217 & 0.0110 & 0.0390 & 0.3076 \\
 \end{table}
 \end{singlespace}
 
-\subsubsection{B.1 Classification Confusion Matrix}
+\subsubsection{B.2 Classification Confusion Matrix}
 
 \textbf{1. Logistic Classification}
 \begin{singlespace}
