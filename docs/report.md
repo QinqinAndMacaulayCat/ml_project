@@ -16,99 +16,50 @@ In addition, we used the change direction of YTM movements as a classification t
 
 ### 2.1 Data Description
 
-We utilized data from Wharton Research Data Services (WRDS) to construct our dataset. The data frequence is monthly and data range is from July 2002 to February 2025.
+We utilize monthly data from Wharton Research Data Services (WRDS) from July 2002 to February 2025. The final panel contains approximately 854,769 bond–month observations for 12,117 unique bonds. We use about 50 predictors from four categories: bond-level characteristics, firm-level stock and accounting variables, macroeconomic indicators, and industry/sector variables (detailed in the appendix).
 
-We totally have 50 features from four categories: bond-level features, firm-level features, macroeconomic features, and industry features. The details of the predictors are listed in the appendix.
-
-The target variable is the corporate bond yield to maturity (YTM) change, defined as the difference in YTM over a one-month horizon:
-
+The regression target is the one-month change in corporate bond yield to maturity (YTM),
 $$
-\Delta \text{YTM}_i = \text{YTM}_{i,t} - \text{YTM}_{i,t-1}
+\Delta \text{YTM}_i = \text{YTM}_{i,t} - \text{YTM}_{i,t-1},
 $$
-
 where $\text{YTM}_{i,t}$ is the yield to maturity of bond $i$ at the end of month $t$.
 
-For classification, the target variable is defined as:
-
+For classification, we use a three-way label indicating the direction of the YTM change:
 $$
-\text{YTM\_Direction}_i = 
+\text{YTM_Direction}_i =
 \begin{cases}
-up, & \text{if } \Delta \text{YTM}_i > 1e-6 \\
-neutral, & \text{if } \Delta \text{YTM}_i \approx 0 \\
-down, & \text{if } \Delta \text{YTM}_i < -1e-6
+\text{up}, & \text{if } \Delta \text{YTM}_i > 10^{-6}, \\
+\text{neutral}, & \text{if } |\Delta \text{YTM}_i| \le 10^{-6}, \\
+\text{down}, & \text{if } \Delta \text{YTM}_i < -10^{-6}.
 \end{cases}
 $$
- 
-
-Total number of observations after merging all datasets is approximately 854769, covering 12117 unique bonds over the sample period.
-
-The data descriptive statistics of the yield to maturity (YTM) changes are as follows:
-
-```plaintext
-count    854769.000000
-mean         -0.000005
-std           0.014440
-min          -0.980800
-25%          -0.001840
-50%          -0.000030
-75%           0.001710
-max           0.979029
-```
-
-The number of observations for each YTM change direction category is as follows: 
-
-```plaintext
-down       435398
-up         399205
-neutral     20166
-```
-
 
 
 ### 2.2 Feature Construction
 
-After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we align all information at a monthly frequency and construct the final panel used for modeling. This stage focuses on dataset merging, temporal alignment, lagging to avoid look-ahead bias, missing-value handling, and feature normalization.
-1. Merging Procedure  
+After preparing the bond-level, firm-level, sector-level, and macroeconomic datasets, we construct a monthly panel at the bond–firm–month level. This stage consists of dataset merging, temporal alignment with appropriate lags, missing-value handling, and feature normalization.
 
-    We combine the datasets in the following order to maintain consistent identifiers and time alignment:  
+1. Merging and alignment  
 
-    - Stock + Fundamentals (PERMNO, date); CRSP monthly stock aggregates are merged with Compustat monthly-filled accounting fundamentals using the common firm identifier (PERMNO) and month-end date.  
-    - Add Macroeconomic Variables (date): Monthly macro data are merged using the calendar month-end date.  
-    - Add Sector ETF Information (industry code): Each firm is mapped to its sector ETF using global industry classification, and monthly ETF returns/prices are merged accordingly.  
-    - Merge with Bond Data (CUSIP root, date): Bonds are linked to issuers via the first six digits of CUSIP (issuer6). Only issuer–month pairs that appear in both datasets are retained to ensure valid alignment.  
+We first merge CRSP stock data and Compustat accounting data at the firm-month level using PERMNO and month-end dates. Monthly macroeconomic variables (e.g., equity index, interest rates, volatility, GDP, CPI) are then merged by calendar month. Sector ETF prices and returns are linked using each issuer’s industry classification to proxy for sector-level conditions. Finally, bond-level data are merged using the issuer’s CUSIP-6 (issuer6) and month-end dates so that each bond-month observation is matched to the corresponding firm, sector, and macro information. Variables that are only observed at lower frequencies (e.g., quarterly accounting data) are lagged to avoid look-ahead bias.
 
-2. Missing-Value Handling
+2. Missing-value handling  
 
-    After merging, missing values are handled according to variable type:
+After merging, missing values are treated in a simple and consistent way. For categorical/dummy variables (credit rating buckets, rating-transition indicators, Compustat data-status flags), we impute missing entries using the cross-sectional monthly median, which coincides with the majority class for 0/1 dummies and preserves the monthly distribution across firms. For numeric variables, we also impute missing values using the cross-sectional median within each month; any remaining missing entries after this step are set to zero.
 
-    Categorical Variables:
+3. Normalization  
 
-    -  Credit rating dummies (AAA…D)
-    -  Rating transition indicators
-    -  Compustat data-status flag (costat)
-    Here we use cross-sectionally monthly median to impute missing values, preserving the categorical distribution across firms each month.
+To make predictors comparable across firms and over time, we apply two types of transformations:
 
-    Numeric Variables: We also use cross-sectionally monthly median to impute missing values for numeric variables, then for remaining NaNs, we set them to zero.
+- **Rank-normalized features.**  
+  Bond-level numeric predictors, stock-return and liquidity measures, accounting ratios, and growth indicators are rank-normalized cross-sectionally within each month. For a given variable \(x\), we compute
+  \[
+  \text{scaled\_rank} = 2 \times \frac{\text{rank}(x)}{N} - 1,
+  \]
+  which maps the cross-sectional ranks into the interval \([-1, 1]\). For binary indicators (e.g., upgrade/downgrade), we assign ranks so that 1 maps to 1 and 0 maps to –1.
 
-
-3. Normalization
-
-   ` (1) Rank-Normalized Features
-
-    - Includes stock features, fundamentals, derived ratios, growth variables, and bond-level numeric predictors.
-    - Each month, variables are transformed using: $$\text{scaled\_rank} = 2 \times \frac{\text{rank}}{N} - 1$$ producing values in [–1, 1].
-    - For binary variables (e.g., upgrade/downgrade), ranks are assigned such that 1 maps to 1 and 0 maps to –1.
-
-`
-    (2) Not Normalized (kept in raw form) includes macroeconomic indicators and yield-curve variables:
-
-    -  sp500_ret, gdp_gr, cpi_infl
-    -  ir3m_chg, ir10y_chg
-    -  vix_chg
-    -   s3m, term_spread
-        
-        These variables are identical across all firms in a given month; rank-normalizing them collapses them into constants, eliminating their informational content. Therefore, they are kept in raw form to preserve meaningful macro signals.
-
+- **Macroeconomic and yield-curve features.**  
+  Macroeconomic variables and yield-curve variables (such as `sp500_ret`, `gdp_gr`, `cpi_infl`, `ir3m_chg`, `ir10y_chg`, `vix_chg`, `gs3m`, `term_spread`) are identical across firms in a given month, so cross-sectional rank normalization would collapse them into constants. Instead, these variables are standardized at the modeling stage using the mean and standard deviation computed from the training period only. This preserves meaningful time-series variation while avoiding data leakage from future observations.
 
 ### 2.3 Data Splitting
 
@@ -226,17 +177,17 @@ In this project, we explored various machine learning models to predict corporat
 
 2. Computation Time For Each Model (Approximate)
 
-| Model                      | Tuning                    | Time for Training and Prediction |
-|----------------------------|---------------------------|----------------------------------|
-| Linear Regression          |                           | 3.9 seconds                      |
-| Elastic Net Regression     |                           | 1 minute 10 seconds              |
-| LGBM Regressor             | 31 minutes 41.4 seconds   | 58.3 seconds                     |
-| Stacked Regressor          |                           | 6 minutes 50 seconds             |
-| Logistic Regression        |                           | 1 minute 30 seconds              |
-| Elastic Net Classification | 83 minutes 59.8 seconds   | 23 minutes 40.7 seconds          |
-| Boosting Classifier        | 114 minutes 48.8 seconds  | 1 minute 27.9 seconds            |
-| Stacked Classifier         |                           | 107 minutes 11.9 seconds         |
-| Multilayer Perceptron      |                           | 3 minutes 16 seconds             |
+| Model                      | Tuning                   | Time for Training and Prediction |
+|----------------------------|--------------------------|----------------------------------|
+| Linear Regression          |                          | 3.9 seconds                      |
+| Elastic Net Regression     |                          | 1 minute 10 seconds              |
+| LGBM Regressor             | 31 minutes 41.4 seconds  | 58.3 seconds                     |
+| Stacked Regressor          |                          | 6 minutes 50 seconds             |
+| Logistic Regression        |                          | 1 minute 30 seconds              |
+| Elastic Net Classification | 83 minutes 59.8 seconds  | 23 minutes 40.7 seconds          |
+| Boosting Classifier        | 114 minutes 48.8 seconds | 1 minute 27.9 seconds            |
+| Stacked Classifier         |                          | 107 minutes 11.9 seconds         |
+| Multilayer Perceptron      | 38 minutes 48 seconds    | 3 minutes 16 seconds             |
 
 ### B.1 Predictor List
 
@@ -340,7 +291,7 @@ These features capture firm momentum and fundamental acceleration, which are kno
 
 
 
-4. Macroeconomic features (yuxi)
+4. Macroeconomic features 
 - Equity Market Return (sp500):  
   Monthly level of a broad U.S. equity index (S&P 500), used to capture overall stock market conditions and risk appetite.
 
@@ -379,7 +330,7 @@ These features capture firm momentum and fundamental acceleration, which are kno
 | Return   |  3117 |   0.008 |   0.055 |  -0.3437  | -0.0217   |  0.0110   |  0.0390   |  0.3076   |
 
 
-### B.1 Classification Confusion Matrix
+### B.2 Classification Confusion Matrix
 
 The confusion matrixs are as follows:
 
